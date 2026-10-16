@@ -189,9 +189,10 @@ local function render()
 			anchor = Vector2.new(0.5, 0),
 			position = UDim2.fromScale(0.5, 0.77),
 			size = UDim2.fromScale(0.9, 0.15),
-		}).Activated:Connect(function()
-			PassPrompt.Offer(passKey)
-		end)
+		}).Activated
+			:Connect(function()
+				PassPrompt.Offer(passKey)
+			end)
 	end
 
 	if not reshow then

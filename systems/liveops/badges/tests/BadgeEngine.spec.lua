@@ -14,12 +14,22 @@ end
 
 local function fixture()
 	return {
-		{ key = "A", name = "A", description = "a", earned = function()
-			return true
-		end },
-		{ key = "B", name = "B", description = "b", earned = function(s)
-			return s.n >= 2
-		end },
+		{
+			key = "A",
+			name = "A",
+			description = "a",
+			earned = function()
+				return true
+			end,
+		},
+		{
+			key = "B",
+			name = "B",
+			description = "b",
+			earned = function(s)
+				return s.n >= 2
+			end,
+		},
 	}
 end
 
@@ -73,9 +83,14 @@ return function()
 	describe("Validate", function()
 		it("reports missing ids, strays, duplicates and broken entries", function()
 			local defs = fixture()
-			table.insert(defs, { key = "A", name = "A", description = "a", earned = function()
-				return true
-			end })
+			table.insert(defs, {
+				key = "A",
+				name = "A",
+				description = "a",
+				earned = function()
+					return true
+				end,
+			})
 			table.insert(defs, { key = "C", name = "C", description = "c" })
 			local problems = BadgeEngine.Validate(defs, { A = 1, C = 3, STRAY = 9 })
 			local text = table.concat(problems, "\n")

@@ -27,7 +27,13 @@ local function waitForChild(parent, name, label)
 	if child then
 		return child
 	end
-	warn("Remotes: still waiting for " .. label .. " after " .. Remotes.CLIENT_WARN_AFTER .. " s; is its server script installed?")
+	warn(
+		"Remotes: still waiting for "
+			.. label
+			.. " after "
+			.. Remotes.CLIENT_WARN_AFTER
+			.. " s; is its server script installed?"
+	)
 	return parent:WaitForChild(name)
 end
 

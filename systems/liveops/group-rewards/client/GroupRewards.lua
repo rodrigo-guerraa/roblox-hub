@@ -86,7 +86,9 @@ function GroupRewards.joinOrClaim(fromGui)
 	prompting = false
 	if not ok then
 		Notice.Show("Find our group on the game page!")
-	elseif membership == Enum.GroupMembershipStatus.Joined or membership == Enum.GroupMembershipStatus.AlreadyMember then
+	elseif
+		membership == Enum.GroupMembershipStatus.Joined or membership == Enum.GroupMembershipStatus.AlreadyMember
+	then
 		isMember = true
 		SoundFX.play("victory")
 	elseif membership == Enum.GroupMembershipStatus.JoinRequestPending then

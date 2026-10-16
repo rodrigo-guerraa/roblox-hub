@@ -33,7 +33,12 @@ GroupRewards.mountCard(win.body, {
 })
 
 if Config.HUD_TILE then
-	local tile = UIStyle.hudButton({ label = "Group", icon = Icons.Friends, color = UIStyle.Colors.blue, order = Config.HUD_ORDER })
+	local tile = UIStyle.hudButton({
+		label = "Group",
+		icon = Icons.Friends,
+		color = UIStyle.Colors.blue,
+		order = Config.HUD_ORDER,
+	})
 	tile.Activated:Connect(win.toggle)
 end
 

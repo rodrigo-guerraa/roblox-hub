@@ -1,32 +1,37 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local RunService        = game:GetService("RunService")
-local TweenService      = game:GetService("TweenService")
-local Debris            = game:GetService("Debris")
-local GuiService        = game:GetService("GuiService")
+local RunService = game:GetService("RunService")
+local TweenService = game:GetService("TweenService")
+local Debris = game:GetService("Debris")
+local GuiService = game:GetService("GuiService")
 
 local UIConfig = require(ReplicatedStorage:WaitForChild("UIConfig"))
-local SoundFX  = require(script.Parent:WaitForChild("SoundFX"))
-local UIStyle  = require(script.Parent:WaitForChild("UIStyle"))
+local SoundFX = require(script.Parent:WaitForChild("SoundFX"))
+local UIStyle = require(script.Parent:WaitForChild("UIStyle"))
 
 local C = Color3.fromRGB
 
 local Effects = {}
 
 Effects.Colors = {
-	gold   = C(255, 205, 60),
-	cyan   = C(90, 220, 255),
-	amber  = C(255, 160, 40),
-	pink   = C(255, 120, 200),
-	white  = C(255, 255, 255),
-	red    = C(255, 90, 80),
+	gold = C(255, 205, 60),
+	cyan = C(90, 220, 255),
+	amber = C(255, 160, 40),
+	pink = C(255, 120, 200),
+	white = C(255, 255, 255),
+	red = C(255, 90, 80),
 }
 
 local COIN_FLIGHT_SECONDS = 0.6
-local COIN_STAGGER        = 0.045
-local MAX_COINS           = 16
-local CONFETTI_COLORS     = {
-	UIStyle.Colors.gold, UIStyle.Colors.blue, UIStyle.Colors.pink, UIStyle.Colors.green,
-	UIStyle.Colors.purple, UIStyle.Colors.orange, UIStyle.Colors.teal,
+local COIN_STAGGER = 0.045
+local MAX_COINS = 16
+local CONFETTI_COLORS = {
+	UIStyle.Colors.gold,
+	UIStyle.Colors.blue,
+	UIStyle.Colors.pink,
+	UIStyle.Colors.green,
+	UIStyle.Colors.purple,
+	UIStyle.Colors.orange,
+	UIStyle.Colors.teal,
 }
 
 local gui = UIStyle.screen("EffectsGui", 20, true)
@@ -34,22 +39,26 @@ local gui = UIStyle.screen("EffectsGui", 20, true)
 local currencyTarget = nil
 
 local function tween(object, seconds, goal, style, direction)
-	local t = TweenService:Create(object, TweenInfo.new(seconds, style or Enum.EasingStyle.Quad, direction or Enum.EasingDirection.Out), goal)
+	local t = TweenService:Create(
+		object,
+		TweenInfo.new(seconds, style or Enum.EasingStyle.Quad, direction or Enum.EasingDirection.Out),
+		goal
+	)
 	t:Play()
 	return t
 end
 
 local function fxPart(position)
 	local part = Instance.new("Part")
-	part.Anchored     = true
-	part.CanCollide   = false
-	part.CanQuery     = false
-	part.CanTouch     = false
-	part.CastShadow   = false
+	part.Anchored = true
+	part.CanCollide = false
+	part.CanQuery = false
+	part.CanTouch = false
+	part.CastShadow = false
 	part.Transparency = 1
-	part.Size         = Vector3.new(1, 1, 1)
-	part.Position     = position
-	part.Parent       = workspace
+	part.Size = Vector3.new(1, 1, 1)
+	part.Position = position
+	part.Parent = workspace
 	return part
 end
 
@@ -59,33 +68,33 @@ function Effects.Burst(position, color, amount)
 	color = color or Effects.Colors.gold
 	local holder = fxPart(position)
 	local emitter = Instance.new("ParticleEmitter")
-	emitter.Texture       = "rbxasset://textures/particles/sparkles_main.dds"
-	emitter.Color         = ColorSequence.new(color)
+	emitter.Texture = "rbxasset://textures/particles/sparkles_main.dds"
+	emitter.Color = ColorSequence.new(color)
 	emitter.LightEmission = 0.7
-	emitter.Speed         = NumberRange.new(8, 15)
-	emitter.SpreadAngle   = Vector2.new(180, 180)
-	emitter.Lifetime      = NumberRange.new(0.4, 0.8)
-	emitter.Size          = NumberSequence.new(0.7, 0)
-	emitter.Acceleration  = Vector3.new(0, -12, 0)
-	emitter.Rate          = 0
-	emitter.Parent        = holder
+	emitter.Speed = NumberRange.new(8, 15)
+	emitter.SpreadAngle = Vector2.new(180, 180)
+	emitter.Lifetime = NumberRange.new(0.4, 0.8)
+	emitter.Size = NumberSequence.new(0.7, 0)
+	emitter.Acceleration = Vector3.new(0, -12, 0)
+	emitter.Rate = 0
+	emitter.Parent = holder
 	emitter:Emit(amount or 24)
 	local light = Instance.new("PointLight")
-	light.Color      = color
-	light.Range      = 14
+	light.Color = color
+	light.Range = 14
 	light.Brightness = 3
-	light.Parent     = holder
+	light.Parent = holder
 	tween(light, 0.5, { Brightness = 0 })
 	Debris:AddItem(holder, 1.5)
 end
 
 function Effects.Ring(position, color, radius)
 	local ring = fxPart(position)
-	ring.Shape        = Enum.PartType.Cylinder
-	ring.Material     = Enum.Material.Neon
-	ring.Color        = color or Effects.Colors.gold
-	ring.Size         = Vector3.new(0.15, 1, 1)
-	ring.CFrame       = CFrame.new(position) * CFrame.Angles(0, 0, math.rad(90))
+	ring.Shape = Enum.PartType.Cylinder
+	ring.Material = Enum.Material.Neon
+	ring.Color = color or Effects.Colors.gold
+	ring.Size = Vector3.new(0.15, 1, 1)
+	ring.CFrame = CFrame.new(position) * CFrame.Angles(0, 0, math.rad(90))
 	ring.Transparency = 0.25
 	local diameter = (radius or 5) * 2
 	tween(ring, 0.5, { Size = Vector3.new(0.15, diameter, diameter), Transparency = 1 })
@@ -120,11 +129,13 @@ end
 
 function Effects.BumpCounter()
 	local target = Effects.getCurrencyTarget()
-	if not target then return end
+	if not target then
+		return
+	end
 	local scale = target:FindFirstChild("BumpScale")
 	if not scale then
 		scale = Instance.new("UIScale")
-		scale.Name   = "BumpScale"
+		scale.Name = "BumpScale"
 		scale.Parent = target
 	end
 	scale.Scale = 1.12
@@ -137,12 +148,12 @@ end
 
 local function makeCoin()
 	local coin = Instance.new("ImageLabel")
-	coin.AnchorPoint            = Vector2.new(0.5, 0.5)
+	coin.AnchorPoint = Vector2.new(0.5, 0.5)
 	coin.BackgroundTransparency = 1
-	coin.Image                  = UIConfig.Currency.icon
-	coin.ScaleType              = Enum.ScaleType.Fit
-	coin.ZIndex                 = 5
-	coin.Parent                 = gui
+	coin.Image = UIConfig.Currency.icon
+	coin.ScaleType = Enum.ScaleType.Fit
+	coin.ZIndex = 5
+	coin.Parent = gui
 	return coin
 end
 
@@ -154,7 +165,11 @@ local function popCoins(fromScreen, count, base, spread)
 			local coin = makeCoin()
 			coin.Position = UDim2.fromOffset(start.X, start.Y)
 			coin.Size = UDim2.fromOffset(base * 0.8, base * 0.8)
-			tween(coin, 0.5, { Position = UDim2.fromOffset(goal.X, goal.Y), Rotation = math.random(-180, 180), ImageTransparency = 1 })
+			tween(coin, 0.5, {
+				Position = UDim2.fromOffset(goal.X, goal.Y),
+				Rotation = math.random(-180, 180),
+				ImageTransparency = 1,
+			})
 			Debris:AddItem(coin, 0.55)
 		end)
 	end
@@ -209,8 +224,15 @@ end
 -- big outlined title text; returns the label, its outline and the UIScale it pops on
 local function shoutLabel(text, color, size, position, outline, maxText, z)
 	local label = UIStyle.text(gui, {
-		text = text, font = UIStyle.Fonts.title, color = color, outline = outline, max = maxText,
-		anchor = Vector2.new(0.5, 0.5), position = position, size = size, z = z,
+		text = text,
+		font = UIStyle.Fonts.title,
+		color = color,
+		outline = outline,
+		max = maxText,
+		anchor = Vector2.new(0.5, 0.5),
+		position = position,
+		size = size,
+		z = z,
 	})
 	local stroke = label:FindFirstChildOfClass("UIStroke")
 	local scale = Instance.new("UIScale")
@@ -227,8 +249,15 @@ end
 
 function Effects.FloatText(text, screenPos, color, size)
 	local height = 0.075 * (size or 30) / 30
-	local label, stroke, scale = shoutLabel(text, color or UIStyle.Colors.gold, UDim2.fromScale(0.6, height),
-		UDim2.fromOffset(screenPos.X, screenPos.Y), 3, math.floor((size or 30) * 1.6), 7)
+	local label, stroke, scale = shoutLabel(
+		text,
+		color or UIStyle.Colors.gold,
+		UDim2.fromScale(0.6, height),
+		UDim2.fromOffset(screenPos.X, screenPos.Y),
+		3,
+		math.floor((size or 30) * 1.6),
+		7
+	)
 	local rise = gui.AbsoluteSize.Y * 0.1
 	scale.Scale = 0.4
 	tween(scale, 0.25, { Scale = 1 }, Enum.EasingStyle.Back)
@@ -241,12 +270,12 @@ end
 
 function Effects.ScreenFlash(color, strength, seconds)
 	local flash = Instance.new("Frame")
-	flash.Size                   = UDim2.fromScale(1, 1)
-	flash.BackgroundColor3       = color or Effects.Colors.white
+	flash.Size = UDim2.fromScale(1, 1)
+	flash.BackgroundColor3 = color or Effects.Colors.white
 	flash.BackgroundTransparency = 1 - (strength or 0.5)
-	flash.BorderSizePixel        = 0
-	flash.ZIndex                 = 1
-	flash.Parent                 = gui
+	flash.BorderSizePixel = 0
+	flash.ZIndex = 1
+	flash.Parent = gui
 	tween(flash, seconds or 0.35, { BackgroundTransparency = 1 })
 	Debris:AddItem(flash, (seconds or 0.35) + 0.1)
 end
@@ -256,17 +285,17 @@ function Effects.Confetti(count)
 	local unit = math.clamp(viewport.Y / 720, 0.6, 1.6)
 	for _ = 1, count or 40 do
 		local piece = Instance.new("Frame")
-		piece.AnchorPoint      = Vector2.new(0.5, 0.5)
-		piece.Size             = UDim2.fromOffset(math.random(9, 15) * unit, math.random(15, 24) * unit)
+		piece.AnchorPoint = Vector2.new(0.5, 0.5)
+		piece.Size = UDim2.fromOffset(math.random(9, 15) * unit, math.random(15, 24) * unit)
 		piece.BackgroundColor3 = CONFETTI_COLORS[math.random(1, #CONFETTI_COLORS)]
-		piece.BorderSizePixel  = 0
-		piece.Rotation         = math.random(0, 360)
-		piece.ZIndex           = 4
+		piece.BorderSizePixel = 0
+		piece.Rotation = math.random(0, 360)
+		piece.ZIndex = 4
 		UIStyle.corner(piece, 0.3)
 		local stroke = UIStyle.stroke(piece, 1.5)
 		local x = math.random(0, math.floor(viewport.X))
 		piece.Position = UDim2.fromOffset(x, -20)
-		piece.Parent   = gui
+		piece.Parent = gui
 		local fall = math.random(110, 190) / 100
 		local drift = TweenInfo.new(fall, Enum.EasingStyle.Quad, Enum.EasingDirection.In)
 		TweenService:Create(piece, drift, {
@@ -280,12 +309,19 @@ function Effects.Confetti(count)
 end
 
 function Effects.Banner(text, color)
-	local label, stroke, scale = shoutLabel(text, color or UIStyle.Colors.gold, UDim2.fromScale(0.9, 0.15),
-		UDim2.fromScale(0.5, 0.31), 5, 110, 8)
+	local label, stroke, scale = shoutLabel(
+		text,
+		color or UIStyle.Colors.gold,
+		UDim2.fromScale(0.9, 0.15),
+		UDim2.fromScale(0.5, 0.31),
+		5,
+		110,
+		8
+	)
 	local gradient = Instance.new("UIGradient")
 	gradient.Rotation = 90
-	gradient.Color    = ColorSequence.new(Color3.new(1, 1, 1), C(214, 214, 214))
-	gradient.Parent   = label
+	gradient.Color = ColorSequence.new(Color3.new(1, 1, 1), C(214, 214, 214))
+	gradient.Parent = label
 	scale.Scale = 0.2
 	tween(scale, 0.4, { Scale = 1 }, Enum.EasingStyle.Back)
 	task.delay(1.3, function()

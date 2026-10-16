@@ -41,7 +41,14 @@ local badge = UIStyle.panel(tile, {
 })
 UIStyle.text(badge, { name = "Mark", text = "!", font = UIStyle.Fonts.title, color = Theme.white, outline = 2, z = 5 })
 
-local win = UIStyle.window({ name = "GiftUI", key = Config.WINDOW_KEY, title = "FREE GIFT", color = Colors.red, icon = Icons.Gift, aspect = 1.5 })
+local win = UIStyle.window({
+	name = "GiftUI",
+	key = Config.WINDOW_KEY,
+	title = "FREE GIFT",
+	color = Colors.red,
+	icon = Icons.Gift,
+	aspect = 1.5,
+})
 local body = win.body
 
 local giftImage = UIStyle.image(body, {

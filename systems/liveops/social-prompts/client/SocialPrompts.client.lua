@@ -11,7 +11,8 @@ local Notice = require(script.Parent:WaitForChild("Notice"))
 local player = Players.LocalPlayer
 
 local function promptFavorite()
-	local ok, favorited = pcall(AvatarEditorService.GetFavorite, AvatarEditorService, game.PlaceId, Enum.AvatarItemType.Asset)
+	local ok, favorited =
+		pcall(AvatarEditorService.GetFavorite, AvatarEditorService, game.PlaceId, Enum.AvatarItemType.Asset)
 	if ok and favorited then
 		return
 	end
@@ -33,8 +34,12 @@ if not Config.INVITE_TILE then
 	return
 end
 
-local inviteButton, inviteSlot =
-	UIStyle.hudButton({ label = "Invite", icon = Icons.Friends, color = UIStyle.Colors.blue, order = Config.INVITE_ORDER })
+local inviteButton, inviteSlot = UIStyle.hudButton({
+	label = "Invite",
+	icon = Icons.Friends,
+	color = UIStyle.Colors.blue,
+	order = Config.INVITE_ORDER,
+})
 
 local function canInvite()
 	return pcall(SocialService.CanSendGameInviteAsync, SocialService, player)

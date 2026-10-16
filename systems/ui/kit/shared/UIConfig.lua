@@ -6,29 +6,29 @@ return {
 	Title = "MY GAME",
 
 	Currency = {
-		icon            = Icons.Coin,
-		prefix          = "$",
-		rateSuffix      = "/s",
-		showIncome      = true,
-		attribute       = "Currency",
+		icon = Icons.Coin,
+		prefix = "$",
+		rateSuffix = "/s",
+		showIncome = true,
+		attribute = "Currency",
 		incomeAttribute = "IncomePerSecond",
 	},
 
 	LoadingScreen = {
-		enabled        = true,
-		icon           = Icons.Star,
-		timeout        = 10,
+		enabled = true,
+		icon = Icons.Star,
+		timeout = 10,
 		-- each entry: "EventName", or { event = "UpdateX", request = "RequestX" } to re-pull a payload another script consumed
-		waitEvents     = {},
+		waitEvents = {},
 		waitAttributes = { "Currency" },
-		topColor       = C(110, 206, 92),
-		bottomColor    = C(34, 118, 64),
-		barColor       = C(255, 142, 36),
+		topColor = C(110, 206, 92),
+		bottomColor = C(34, 118, 64),
+		barColor = C(255, 142, 36),
 	},
 
 	Music = {
-		enabled     = true,
-		muteButton  = true,
+		enabled = true,
+		muteButton = true,
 		buttonOrder = 9,
 		tracks = {
 			{ id = "rbxassetid://1842776748", volume = 0.22 },

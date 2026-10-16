@@ -49,9 +49,12 @@ return function()
 
 		it("only lists a pass item when the filter allows it", function()
 			expect(find(OddsDisclosure.Items(GROUPS, TABLES.top, nil), "P")).to.equal(nil)
-			expect(find(OddsDisclosure.Items(GROUPS, TABLES.top, function()
-				return false
-			end), "P")).to.equal(nil)
+			expect(find(
+				OddsDisclosure.Items(GROUPS, TABLES.top, function()
+					return false
+				end),
+				"P"
+			)).to.equal(nil)
 			expect(find(OddsDisclosure.Items(GROUPS, TABLES.top, allowAll), "P") ~= nil).to.equal(true)
 		end)
 

@@ -1,68 +1,100 @@
-local Players           = game:GetService("Players")
+local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local RunService        = game:GetService("RunService")
-local TweenService      = game:GetService("TweenService")
+local RunService = game:GetService("RunService")
+local TweenService = game:GetService("TweenService")
 
 local NumberFormat = require(ReplicatedStorage:WaitForChild("NumberFormat"))
-local UIConfig     = require(ReplicatedStorage:WaitForChild("UIConfig"))
-local UIStyle      = require(script.Parent:WaitForChild("UIStyle"))
-local Effects      = require(script.Parent:WaitForChild("Effects"))
+local UIConfig = require(ReplicatedStorage:WaitForChild("UIConfig"))
+local UIStyle = require(script.Parent:WaitForChild("UIStyle"))
+local Effects = require(script.Parent:WaitForChild("Effects"))
 
 local player = Players.LocalPlayer
 local config = UIConfig.Currency
 
-local PANEL_ASPECT  = 3.4
-local RATE_DROP     = 1.3
+local PANEL_ASPECT = 3.4
+local RATE_DROP = 1.3
 local COUNT_SECONDS = 0.7
-local INK           = UIStyle.Theme.ink
+local INK = UIStyle.Theme.ink
 
 local screenGui = UIStyle.screen("CurrencyDisplay", 2)
 
 local panel = UIStyle.panel(screenGui, {
-	name = "Panel", anchor = Vector2.new(0.5, 0), position = UDim2.new(0.5, 0, 0, 10),
-	color = UIStyle.Theme.card, corner = 0.5, outlineWidth = 3,
+	name = "Panel",
+	anchor = Vector2.new(0.5, 0),
+	position = UDim2.new(0.5, 0, 0, 10),
+	color = UIStyle.Theme.card,
+	corner = 0.5,
+	outlineWidth = 3,
 })
 UIStyle.aspect(panel, PANEL_ASPECT)
 local panelGradient = Instance.new("UIGradient")
 panelGradient.Rotation = 90
-panelGradient.Color    = ColorSequence.new(Color3.fromRGB(255, 255, 255), UIStyle.Theme.panelEnd)
-panelGradient.Parent   = panel
+panelGradient.Color = ColorSequence.new(Color3.fromRGB(255, 255, 255), UIStyle.Theme.panelEnd)
+panelGradient.Parent = panel
 
 -- the counter's footprint including the rate pill, untouched by the bump UIScale; banners and toasts stack below it
 local footprint = Instance.new("Frame")
-footprint.Name                   = "Footprint"
-footprint.AnchorPoint            = panel.AnchorPoint
-footprint.Position               = panel.Position
-footprint.Size                   = UDim2.fromScale(1, 1)
+footprint.Name = "Footprint"
+footprint.AnchorPoint = panel.AnchorPoint
+footprint.Position = panel.Position
+footprint.Size = UDim2.fromScale(1, 1)
 footprint.BackgroundTransparency = 1
-footprint.Parent                 = screenGui
+footprint.Parent = screenGui
 local footprintAspect = UIStyle.aspect(footprint, PANEL_ASPECT)
 
 UIStyle.image(panel, {
-	name = "Icon", image = config.icon, anchor = Vector2.new(0.5, 0.5), position = UDim2.fromScale(0.05, 0.5),
-	size = UDim2.fromScale(1, 1.35), z = 3,
+	name = "Icon",
+	image = config.icon,
+	anchor = Vector2.new(0.5, 0.5),
+	position = UDim2.fromScale(0.05, 0.5),
+	size = UDim2.fromScale(1, 1.35),
+	z = 3,
 })
 
 local amountLabel = UIStyle.text(panel, {
-	name = "Amount", text = config.prefix .. "0", font = UIStyle.Fonts.title, color = INK, max = 64, wrap = false,
-	anchor = Vector2.new(0.5, 0.5), position = UDim2.fromScale(0.6, 0.47), size = UDim2.fromScale(0.66, 0.7), z = 2,
+	name = "Amount",
+	text = config.prefix .. "0",
+	font = UIStyle.Fonts.title,
+	color = INK,
+	max = 64,
+	wrap = false,
+	anchor = Vector2.new(0.5, 0.5),
+	position = UDim2.fromScale(0.6, 0.47),
+	size = UDim2.fromScale(0.66, 0.7),
+	z = 2,
 })
 
 local ratePill = UIStyle.panel(panel, {
-	name = "Rate", anchor = Vector2.new(0.5, 0.4), position = UDim2.fromScale(0.6, 1), size = UDim2.fromScale(0.52, 0.5),
-	color = UIStyle.Colors.green, corner = 0.5, outlineWidth = 2, gloss = true, z = 4, visible = false,
+	name = "Rate",
+	anchor = Vector2.new(0.5, 0.4),
+	position = UDim2.fromScale(0.6, 1),
+	size = UDim2.fromScale(0.52, 0.5),
+	color = UIStyle.Colors.green,
+	corner = 0.5,
+	outlineWidth = 2,
+	gloss = true,
+	z = 4,
+	visible = false,
 })
 
 local rateLabel = UIStyle.text(ratePill, {
-	name = "Income", text = config.prefix .. "0" .. config.rateSuffix, font = UIStyle.Fonts.title, color = UIStyle.Theme.white,
-	outline = 2, max = 32, wrap = false,
-	anchor = Vector2.new(0.5, 0.5), position = UDim2.fromScale(0.5, 0.54), size = UDim2.fromScale(0.86, 0.8), z = 5,
+	name = "Income",
+	text = config.prefix .. "0" .. config.rateSuffix,
+	font = UIStyle.Fonts.title,
+	color = UIStyle.Theme.white,
+	outline = 2,
+	max = 32,
+	wrap = false,
+	anchor = Vector2.new(0.5, 0.5),
+	position = UDim2.fromScale(0.5, 0.54),
+	size = UDim2.fromScale(0.86, 0.8),
+	z = 5,
 })
 
 local function place()
 	local height = UIStyle.isPhone() and 0.12 or 0.075
 	local drop = ratePill.Visible and RATE_DROP or 1
-	panel.Size     = UDim2.fromScale(0.6, height)
+	panel.Size = UDim2.fromScale(0.6, height)
 	footprint.Size = UDim2.fromScale(0.6, height * drop)
 	footprintAspect.AspectRatio = PANEL_ASPECT / drop
 end
@@ -73,7 +105,7 @@ UIStyle.registerTopCard(footprint)
 Effects.setCurrencyTarget(panel)
 
 local displayed = 0
-local seeded    = false
+local seeded = false
 local countToken = 0
 
 local function show(value)

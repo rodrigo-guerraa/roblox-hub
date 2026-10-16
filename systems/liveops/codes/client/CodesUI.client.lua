@@ -17,7 +17,8 @@ local Colors = UIStyle.Colors
 local SUCCESS = Color3.fromRGB(46, 150, 56)
 local FAILURE = Color3.fromRGB(214, 52, 52)
 
-local toggleButton = UIStyle.hudButton({ label = "Codes", icon = Icons.Codes, color = Colors.purple, order = CodesConfig.HUD_ORDER })
+local toggleButton =
+	UIStyle.hudButton({ label = "Codes", icon = Icons.Codes, color = Colors.purple, order = CodesConfig.HUD_ORDER })
 
 local win = UIStyle.window({
 	name = "CodesUI",
