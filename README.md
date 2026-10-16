@@ -39,7 +39,17 @@ It packages what shipping a Roblox simulator this way taught us: a project templ
 | --- | --- |
 | `template/` | Builds, lints and format-checks clean in CI. |
 | `skills/` | Ready to use. |
-| `systems/` | Extracted from the shipped game and made game-agnostic. CI assembles the template with every system and keeps it formatted, lint-clean and building, but the generic versions **have not yet been run in Studio** — expect the first game that adopts them to find and fix a few issues (their READMEs list the checks to run). |
+| `systems/` | Extracted from the shipped game and made game-agnostic, then run together in Studio: all 84 specs pass, and a playtest exercised each system through the Studio MCP (purchases with fake receipts, forged remote calls, policy blocking, offline doubling, codes, gifts, group reward). Not yet exercised: badge awarding and live pass purchases (they need real ids in a published game) and saving across sessions. Per-system detail is in the [reuse catalog](docs/reuse-catalog.md). |
+
+## The UI kit
+
+Every window and the HUD come from one small kit (`systems/ui/kit`), sized by scale so the same code fits desktop and phones. These are the generic systems running in an empty Baseplate:
+
+<p>
+  <img src="docs/images/ui-kit-gift.jpg" alt="Playtime gift window" width="32%">
+  <img src="docs/images/ui-kit-offline.jpg" alt="Welcome-back offline earnings popup with HUD" width="32%">
+  <img src="docs/images/ui-kit-codes.jpg" alt="Codes window with the group reward card" width="32%">
+</p>
 
 ## Principles
 
