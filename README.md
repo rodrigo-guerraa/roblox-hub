@@ -60,4 +60,4 @@ Every window and the HUD come from one small kit (`systems/ui/kit`), sized by sc
 
 ## License
 
-The hub's own content is [MIT](LICENSE). Vendored skills and ProfileStore keep their own licenses (MIT or Apache-2.0) — see each folder's `LICENSE` / `SOURCE.md` and the note at the end of [`LICENSE`](LICENSE).
+The hub's own content is [MIT](LICENSE). Vendored skills and ProfileStore keep their own licenses (MIT or Apache-2.0) — see [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md).
