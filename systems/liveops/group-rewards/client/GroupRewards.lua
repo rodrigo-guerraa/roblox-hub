@@ -131,7 +131,7 @@ function GroupRewards.mountCard(parent, props)
 		max = 22,
 		alignX = Enum.TextXAlignment.Left,
 		position = UDim2.fromScale(0.25, 0.46),
-		size = UDim2.fromScale(0.44, 0.46),
+		size = UDim2.fromScale(0.41, 0.46),
 	})
 	local button = UIStyle.button(card, {
 		name = "GroupButton",

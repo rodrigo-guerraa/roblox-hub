@@ -493,8 +493,8 @@ function UIStyle.window(props)
 		outline = 3,
 		max = 56,
 		anchor = Vector2.new(0.5, 0.5),
-		position = UDim2.fromScale(0.5, 0.54),
-		size = UDim2.fromScale(props.icon and 0.66 or 0.84, 0.78),
+		position = UDim2.fromScale(props.icon and 0.59 or 0.5, 0.54),
+		size = UDim2.fromScale(props.icon and 0.62 or 0.84, 0.78),
 		z = 4,
 	})
 	local icon
