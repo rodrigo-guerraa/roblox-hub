@@ -18,19 +18,6 @@ jobs:
           bash scripts/install-tools.sh "$HOME/.local/bin"
           echo "$HOME/.local/bin" >> "$GITHUB_PATH"
 
-      - name: Format check
-        run: stylua --check template systems
-
-      - name: Assemble sandbox (template + every system)
-        run: bash scripts/assemble-sandbox.sh
-
-      - name: Lint
-        working-directory: .sandbox
-        run: selene src tests
-
-      - name: Build
-        working-directory: .sandbox
-        run: |
-          # TestEZ is only needed in Studio; an empty DevPackages folder is enough to build
-          mkdir -p DevPackages
-          rojo build -o game.rbxl
+      # privacy guards, format check, then lint and build of the template with every system installed
+      - name: Checks
+        run: bash scripts/check.sh
