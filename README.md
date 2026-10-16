@@ -14,7 +14,7 @@ It packages what shipping a Roblox simulator this way taught us: a project templ
 | [`systems/`](systems/) | Reusable game systems, copied into a game rather than linked: **core** (save data with migrations, economy, remotes, number formatting), a cartoon-style **UI kit**, **monetization** (receipts, game passes, paid-random-items policy, offline earnings) and **live-ops** (codes, playtime gifts, group rewards, badges, social prompts). They share one contract: [`systems/CONVENTIONS.md`](systems/CONVENTIONS.md). |
 | [`skills/`](skills/) | Claude Code skills. [`roblox-lessons`](skills/roblox-lessons/) is original: the gotchas learned shipping a game. [`skills/vendored/`](skills/vendored/) holds 18 skills curated from public collections — trimmed, corrected and pinned, each with its license and a `SOURCE.md` describing the changes. |
 | [`docs/`](docs/) | [Onboarding](docs/onboarding.md), the [reuse catalog](docs/reuse-catalog.md) and a [survey](docs/research/2026-10-skill-and-tool-survey.md) of Roblox tools, libraries and AI skill repos. |
-| [`scripts/`](scripts/) | Installing the skills for every project, and the CI helpers: `assemble-sandbox.sh` builds the template with every system dropped in, which CI format-checks, lints and builds on every push. |
+| [`scripts/`](scripts/) | Installing the skills for every project, and the CI helpers: `assemble-sandbox.sh` builds the template with every system dropped in, and `check.sh` runs every CI check locally: privacy guards, format, lint and build. |
 
 ## Quick start
 
@@ -55,7 +55,7 @@ Every window and the HUD come from one small kit (`systems/ui/kit`), sized by sc
 
 - **Prove it in Studio.** A change counts as done when it's been exercised in a fresh playtest through the Studio MCP — not when it compiles.
 - **Copy, don't link.** A game owns its copy of a system; improvements are copied back into the hub deliberately.
-- **Lessons flow back.** When a game teaches something new, it goes into `skills/roblox-lessons`.
+- **Lessons flow back.** When a game builds something reusable and not proprietary, or learns a new gotcha, it comes back here through [`CONTRIBUTING.md`](CONTRIBUTING.md), which sets a stricter bar than game code.
 - **Vendored content is curated.** Third-party skills are copied by hand (never via installers), pinned to a commit, kept under their license and documented in `SOURCE.md`. Content that tries to steer the agent ("load me first", "override other rules") is removed.
 
 ## License

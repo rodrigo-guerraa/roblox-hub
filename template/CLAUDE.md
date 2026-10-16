@@ -21,7 +21,14 @@ This game was started from the `roblox-hub` folder that sits next to it (`../rob
 - `roblox-hub/systems/` — proven game systems (saving, UI kit, monetization, live-ops) to copy in rather than rewrite.
 - `roblox-hub/docs/` — onboarding and the reuse catalog.
 
-When this game improves a shared system or discovers a new gotcha, update the hub as well (and say so in the commit).
+### Sharing back to the hub
+
+The hub is public and every new game starts from it. When something built here is reusable and not proprietary, it goes back to the hub too:
+
+- **Qualifies:** systems most games need (saving, economy hooks, monetization plumbing, live-ops, UI components, tooling), template improvements, and new Roblox gotchas (→ `roblox-lessons`).
+- **Stays here:** the core loop, content, art, map, names and branding, economy numbers and prices, and anything carrying this game's ids.
+- **When:** once a feature is finished and verified here, say in one line whether it qualifies. Port it after the maintainer agrees, as separate work.
+- **How:** follow `../roblox-hub/CONTRIBUTING.md`. The hub's bar is stricter than this game's: generic config, specs, Studio verification in the hub's sandbox, docs, `scripts/check.sh` green and clean commits. Push to the hub only with the maintainer's go-ahead.
 
 ---
 

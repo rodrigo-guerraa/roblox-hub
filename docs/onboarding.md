@@ -35,10 +35,11 @@ Start from `docs/reuse-catalog.md`. Typical simulator: core (data, economy, remo
 ## 5. Release
 Skills: `roblox-publish-checklist`, `roblox-release-operations`. Keep a `RELEASE_CHECKLIST.md` in the game. Publish from Studio with Rojo synced; then run the live test.
 
-## 6. After every game
+## 6. Sharing back, as you go
+Don't wait for the game to ship. Whenever a finished, verified feature is reusable and not proprietary, port it to the hub following [`CONTRIBUTING.md`](../CONTRIBUTING.md):
 - New gotcha learned → add it to `skills/roblox-lessons/references/` (+ re-run the sync script).
-- Improved a shared system → copy the improvement back into `systems/` and note it in the system's README.
-- Commit to the hub, then push.
+- New or improved shared system → port it into `systems/`, update its README and the reuse catalog.
+- `bash scripts/check.sh` green and the Studio sandbox check done → commit to the hub; push with the maintainer's go-ahead.
 
 ## A new AI session on an existing game
 Claude reads the game's `CLAUDE.md` (the project's memory) and the `roblox-lessons` skill. Keep `CLAUDE.md` current — it's how the next session knows what exists.

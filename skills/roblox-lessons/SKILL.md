@@ -20,6 +20,10 @@ Facts below were each learned by breaking something. They override generic advic
 9. **Open Cloud API keys can create passes/products and edit the game page, but can't make a game public, upload thumbnails, or create badges without a spend-Robux scope.** → `references/open-cloud.md`
 10. **Third-party models with any script are rejected outright** (backdoors are common). → `references/assets-visuals.md`
 
+## Sharing with the hub
+
+These lessons and the reusable systems live in the public `roblox-hub` repo (usually next to the game as `../roblox-hub`; github.com/rodrigo-guerraa/roblox-hub). When a game builds something reusable and not proprietary (a generic system, a template improvement, a new gotcha), say so once the feature is verified, and port it after the maintainer agrees, following the hub's `CONTRIBUTING.md`: what qualifies, what stays in the game, the quality bar and the process (`scripts/check.sh`, Studio verification in the hub's sandbox, clean commits, pushes only with a go-ahead).
+
 ## Reference files
 
 | File | Covers |
