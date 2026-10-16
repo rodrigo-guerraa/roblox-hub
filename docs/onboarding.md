@@ -6,10 +6,10 @@ Who does what: **the AI (Claude Code) writes, tests and commits all code.** The 
 - Roblox Studio, VS Code with the Rojo extension, git.
 - Rokit (https://github.com/rojo-rbx/rokit) — installs every other tool per project.
 - In Studio: Assistant settings → enable the **Studio MCP server**; Rojo plugin installed.
-- Hub skills installed for every project: `powershell -ExecutionPolicy Bypass -File C:\Users\Digo\roblox-hub\scripts\sync-skills.ps1` (re-run when the hub's skills change).
+- Hub skills installed for every project: `powershell -ExecutionPolicy Bypass -File C:\Users\Digo\roblox\roblox-hub\scripts\sync-skills.ps1` (re-run when the hub's skills change).
 
 ## 1. Create the project (owner + AI)
-1. Copy `roblox-hub/template/` to `C:\Users\Digo\<game-name>`; `git init`.
+1. Copy `roblox-hub/template/` to `C:\Users\Digo\roblox\<game-name>`; `git init`.
 2. `rokit install`, then `wally install`.
 3. Rename the game in `default.project.json` and `wally.toml`.
 4. Fill in the top of `CLAUDE.md`: what the game is, the audience (age!), core loop, how it makes money.

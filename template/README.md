@@ -4,7 +4,7 @@ An empty Roblox game wired for AI-driven development: Rojo, Wally, Selene, StyLu
 
 ## Start a new game
 
-1. Copy this folder to the new project location (e.g. `C:\Users\Digo\my-new-game`) and `git init` it.
+1. Copy this folder to the new project location (e.g. `C:\Users\Digo\roblox\my-new-game`) and `git init` it.
 2. `rokit install` (first time on a machine: install Rokit itself from https://github.com/rojo-rbx/rokit).
 3. `wally install`.
 4. Fill in the top of `CLAUDE.md` (name, audience, core loop, monetization) and change `name` in `default.project.json` and `wally.toml`.
