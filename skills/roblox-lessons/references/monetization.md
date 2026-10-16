@@ -13,8 +13,8 @@
 - Pitch passes in context (stepping on a locked plate offers its pass, a welcome-back popup offers the offline booster) with a cooldown.
 
 ## Pricing
-- Roblox keeps 30% and rounds the creator share down (as far as we know a 1 R$ item earns nothing). Keep prices ≥ 2 R$.
-- Any **repeatable** product that multiplies a value must have a cap or a price ladder. A flat-price "double your offline earnings" was buyable repeatedly, doubling each time; fixed as a ladder (9/19/39/79/159 R$, up to ×32) that resets when collected and refuses past the end.
+- Roblox keeps 30% and rounds the creator share down (reportedly a 1 R$ item earns nothing). Keep prices ≥ 2 R$.
+- Any **repeatable** product that multiplies a value must have a cap or a price ladder. A flat-price "double your offline earnings" was buyable repeatedly, doubling each time; fixed as a ladder (e.g. 9/19/39/79/159 R$, up to ×32) that resets when collected and refuses past the end.
 - Income-scaled payouts ("1 hour of your income") keep packs worth buying at every stage; show the real amount ("+$2.1M instantly"), not "1h of income".
 
 ## Paid random items (policy)
@@ -23,7 +23,7 @@
 - Read `PolicyService:GetPolicyInfoForPlayerAsync(player).ArePaidRandomItemsRestricted` on join (retry; a failed lookup counts as restricted). For restricted players: block Robux→currency products and Robux→roll shortcuts (UI notice + server refuses the receipt), don't sell odds-changing passes, and leave pass-only outcomes out of their rolls. Then their currency is earned-only.
 - Answer "yes" to paid random items in the Maturity & Compliance questionnaire.
 
-## Kids audience
+## Young audience
 - No rewards for inviting friends (incentivized invites). Favorite prompt once, at a high point (e.g. first rebirth), skipped if already favorited.
 - The age label comes from the questionnaire; voice chat can be switched off via the API.
 

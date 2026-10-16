@@ -65,8 +65,8 @@ Badges can be awarded in Studio only for badges of the place's own universe. Use
 
 ## 6. Origin
 
-Dino Simulator `src/shared/BadgeData.lua`, `src/server/BadgeAwardService.server.lua` and `tests/BadgeData.spec.lua`.
-- The dino badges and `StateFromProfile` (hatches, rebirths, mutations, dex, park level) were replaced by a game-owned `BadgeDefinitions.lua` with three core-only examples.
+Extracted from the reference game's `src/shared/BadgeData.lua`, `src/server/BadgeAwardService.server.lua` and `tests/BadgeData.spec.lua`.
+- The reference game's badges and `StateFromProfile` (hatches, rebirths, mutations, dex, park level) were replaced by a game-owned `BadgeDefinitions.lua` with three core-only examples.
 - The judging logic moved into the pure `BadgeEngine` (`Pending` also skips ids that are `0`; `Validate` is new).
 - `BadgeService.AwardBadge` (deprecated) became `AwardBadgeAsync`.
 - Judging is `pcall`ed, so a broken definition can't wedge a player's check flag.

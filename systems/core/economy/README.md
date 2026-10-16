@@ -71,7 +71,7 @@ None. Clients read the `Currency` and `IncomePerSecond` attributes.
 
 ## 6. Origin
 
-Dino Simulator, generalised:
+Extracted from the reference game, generalised:
 - `DataService.AddCoins`/`SetCoins` (coins clamped at 0, positive gains counted into `runEarned`) became `Grant`/`Spend` with validation and an affordability check.
 - `PlateService`'s `UpdateCoins` fires and its per-tick `ActiveCPS` attribute became the `Currency` and `IncomePerSecond` attributes. The income is now game-supplied instead of computed from species CPS.
 - The Studio `$10K` join grant from `DataService` became `STUDIO_START_BALANCE`.

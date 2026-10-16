@@ -40,7 +40,7 @@ local function canInvite()
 	return pcall(SocialService.CanSendGameInviteAsync, SocialService, player)
 end
 
--- no reward for inviting: incentivized invites are against the rules for a kids audience
+-- no reward for inviting: incentivized invites are against the rules for a young audience
 inviteButton.Activated:Connect(function()
 	local ok, allowed = canInvite()
 	if ok and allowed then

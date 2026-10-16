@@ -76,7 +76,7 @@ Set `GROUP_ID` to a group the test account is in (and a second run with one it i
 
 ## 6. Origin
 
-Dino Simulator `src/server/GroupRewardService.server.lua`, the group card and `GroupPad` touch logic in `src/client/CodesUI.client.lua`, and `EconomyMath.GroupJoinPayout`.
+Extracted from the reference game's `src/server/GroupRewardService.server.lua`, the group card and `GroupPad` touch logic in `src/client/CodesUI.client.lua`, and `EconomyMath.GroupJoinPayout`.
 - The plot-specific pad lookup (`Workspace.Plots.PlotN.GroupPad`) became the CollectionService tag `GroupPad`.
 - The card became an embeddable `mountCard`, plus a standalone window and an optional HUD tile. The Codes window embeds it only when this module exists.
 - The join-or-claim state moved into a shared client module, with a claim timeout so a dropped reply can't lock the button.

@@ -64,8 +64,8 @@ No ids to create. Post codes in the group or on the game page, and retire them w
 
 ## 6. Origin
 
-Dino Simulator `src/shared/CodeData.lua`, `src/server/CodeService.server.lua`, `src/client/CodesUI.client.lua` and `tests/CodeData.spec.lua`.
-- The code table moved to `CodesConfig.CODES`; `Reward` takes the game's income instead of dino's `PlateServiceAPI.GetActiveCPS`.
+Extracted from the reference game's `src/shared/CodeData.lua`, `src/server/CodeService.server.lua`, `src/client/CodesUI.client.lua` and `tests/CodeData.spec.lua`.
+- The code table moved to `CodesConfig.CODES`; `Reward` takes the game's income instead of the reference game's `PlateServiceAPI.GetActiveCPS`.
 - Coins go through `EconomyAPI.Grant` instead of `DataService.AddCoins` plus an `UpdateCoins` fire.
 - Remotes come from `Remotes.event` instead of `Config.EVENT_*`.
 - The group card, the `GroupPad` touch wiring and the group remotes moved out to `liveops/group-rewards`; the window mounts that card only when the system is present.

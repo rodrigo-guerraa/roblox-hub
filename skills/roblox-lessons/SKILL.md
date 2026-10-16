@@ -16,7 +16,7 @@ Facts below were each learned by breaking something. They override generic advic
 5. **Purchases: one receipt handler, dedupe by `PurchaseId` stored in the player's own save**, `NotProcessedYet` whenever unsure. → `references/monetization.md`
 6. **Coins buyable with Robux make every coin-funded random roll a paid random item**: odds before purchase + `PolicyService.ArePaidRandomItemsRestricted` gating. → `references/monetization.md`
 7. **`shared.*` read from MCP `execute_luau` is a sandbox, not the game's.** Use a temporary Script to call real server APIs. → `references/studio-mcp.md`
-8. **Kicking the only player during Play start wedges the MCP's Play button** until a human presses Play/Stop. → `references/studio-mcp.md`
+8. **Kicking the only player during Play start wedges the MCP's Play button** until Play/Stop is pressed by hand in Studio. → `references/studio-mcp.md`
 9. **Open Cloud API keys can create passes/products and edit the game page, but can't make a game public, upload thumbnails, or create badges without a spend-Robux scope.** → `references/open-cloud.md`
 10. **Third-party models with any script are rejected outright** (backdoors are common). → `references/assets-visuals.md`
 

@@ -45,4 +45,4 @@ It creates only what callers ask for, inside `ReplicatedStorage.RemoteEvents`.
 
 ## 6. Origin
 
-Dino Simulator `src/server/RemoteSetup.server.lua` registered every remote from the `Config.EVENT_*` constants, and clients used `RemoteEvents:WaitForChild(name)`. Here creation is lazy and per system, so independent systems can be copied in without editing a central list. The client wait got a named warning.
+In the reference game, `src/server/RemoteSetup.server.lua` registered every remote from the `Config.EVENT_*` constants, and clients used `RemoteEvents:WaitForChild(name)`. Here creation is lazy and per system, so independent systems can be copied in without editing a central list. The client wait got a named warning.

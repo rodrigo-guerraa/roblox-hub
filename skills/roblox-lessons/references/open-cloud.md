@@ -23,7 +23,7 @@ Base URL `https://apis.roblox.com`, header `x-api-key`. Docs index: `https://cre
 - Universe description is set through the root **place** (the universe field mirrors it). Emoji need UTF-8 JSON (`--data-binary @file`, Python with `PYTHONIOENCODING=utf-8`).
 
 ## What doesn't (verified)
-- `PATCH …/universes/{u}?updateMask=visibility` returns 200 but **is ignored**. Making a game public needs `POST /legacy-develop/v1/universes/{u}/activate` with `legacy-universe:manage` — or the owner clicks it in the dashboard.
-- **Game thumbnails/icon can't be uploaded with an API key** (cookie-only endpoints) — the owner uploads them.
+- `PATCH …/universes/{u}?updateMask=visibility` returns 200 but **is ignored**. Making a game public needs `POST /legacy-develop/v1/universes/{u}/activate` with `legacy-universe:manage` — or the maintainer clicks it in the dashboard.
+- **Game thumbnails/icon can't be uploaded with an API key** (cookie-only endpoints) — the maintainer uploads them.
 - Creating badges needs `legacy-universe.badge:manage-and-spend-robux` (badges can cost Robux beyond a free allowance).
 - Public game info (`games.roblox.com`) shows placeholders while a game is private.

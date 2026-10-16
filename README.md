@@ -1,26 +1,51 @@
 # roblox-hub
 
-Shared toolkit for Roblox games built with AI (Claude Code). Every game starts from here and gives back to it.
+A toolkit for building Roblox games where **the code is written, tested and maintained by an AI agent** ([Claude Code](https://claude.com/claude-code)) and a human makes the design, art and business calls.
 
-| Folder | What's in it | Status |
-| --- | --- | --- |
-| `skills/` | Skills the AI reads. `roblox-lessons` = our own gotchas from shipped games, plus 18 vendored third-party skills (trimmed, pinned, licensed; see `docs/reuse-catalog.md`). | Done |
-| `template/` | An empty game wired for AI development (Rojo, Wally, Selene, StyLua, luau-lsp, Lune, TestEZ, starter `CLAUDE.md`). | Done |
-| `systems/` | Game systems to copy into new games: core (data, economy, remotes, format), UI kit, monetization, live-ops. Contract in `systems/CONVENTIONS.md`. | Built + lint clean; first Studio run pending |
-| `docs/` | `onboarding.md`, `reuse-catalog.md`, research notes. | Done |
-| `scripts/` | Hub maintenance (e.g. installing skills user-wide). | Done |
+It packages what shipping a Roblox simulator this way taught us: a project template wired for AI guardrails, game systems you can drop into a new game, and "skills" — knowledge files the agent loads on demand — including a hard-won list of Roblox gotchas.
 
-## Install the skills (every project gets them)
+## What's inside
 
-```powershell
-powershell -ExecutionPolicy Bypass -File scripts\sync-skills.ps1
-```
+| Folder | Contents |
+| --- | --- |
+| [`template/`](template/) | An empty Rojo project: pinned toolchain (Rojo, Wally, Selene, StyLua, luau-lsp, Lune), lint/format/type-check configs, a TestEZ runner and a starter `CLAUDE.md` with working rules for the agent. |
+| [`systems/`](systems/) | Reusable game systems, copied into a game rather than linked: **core** (save data with migrations, economy, remotes, number formatting), a cartoon-style **UI kit**, **monetization** (receipts, game passes, paid-random-items policy, offline earnings) and **live-ops** (codes, playtime gifts, group rewards, badges, social prompts). They share one contract: [`systems/CONVENTIONS.md`](systems/CONVENTIONS.md). |
+| [`skills/`](skills/) | 19 Claude Code skills. [`roblox-lessons`](skills/roblox-lessons/) is original; 18 are curated from public skill collections — trimmed, corrected and pinned, each with its license and a `SOURCE.md` describing the changes. |
+| [`docs/`](docs/) | [Onboarding](docs/onboarding.md), the [reuse catalog](docs/reuse-catalog.md) and a [survey](docs/research/2026-10-skill-and-tool-survey.md) of Roblox tools, libraries and AI skill repos. |
+| [`scripts/`](scripts/) | Maintenance scripts, e.g. installing the skills for every project. |
 
-Copies `skills/*` into `%USERPROFILE%\.claude\skills\`. Re-run after the hub's skills change. It only replaces skill folders the hub owns (listed in `skills/`).
+## Quick start
 
-## Rules for the hub
+1. Clone this repo into a workspace folder that will hold your games next to it:
+   ```
+   roblox/
+   ├── roblox-hub/
+   └── my-game/
+   ```
+2. Install the skills for all your Claude Code projects (Windows):
+   ```powershell
+   powershell -ExecutionPolicy Bypass -File roblox-hub\scripts\sync-skills.ps1
+   ```
+   This copies `skills/*` into `%USERPROFILE%\.claude\skills\`, replacing only the folders the hub owns. Re-run it after pulling skill updates.
+3. Start a new game from the template by following [`docs/onboarding.md`](docs/onboarding.md) — or open a Claude Code session in an empty folder next to the hub and ask it to start a game from `../roblox-hub`.
 
-- **Vendoring third-party skills:** copy chosen files by hand (never run installers), pin the source commit, keep the license, and record source + changes in a `SOURCE.md` next to them. Repos with no license are reference-only.
-- **Systems are copied into games, not linked.** A game owns its copy; improvements are copied back here deliberately.
-- **Lessons flow back.** When a game teaches something new, add it to `skills/roblox-lessons/references/`.
-- Origin: distilled from shipping a Roblox simulator built end to end with Claude Code.
+**Requirements:** Roblox Studio with its built-in MCP server enabled (the agent verifies every change through it), the Rojo Studio plugin, [Rokit](https://github.com/rojo-rbx/rokit), git and Claude Code.
+
+## Status
+
+| Part | State |
+| --- | --- |
+| `template/` | Builds and lints clean. |
+| `skills/` | Ready to use. |
+| `systems/` | Extracted from the shipped game and made game-agnostic. The full stack builds and lints clean together, but the generic versions **have not yet been run in Studio** — expect the first game that adopts them to find and fix a few issues (their READMEs list the checks to run). |
+
+## Principles
+
+- **Prove it in Studio.** A change counts as done when it's been exercised in a fresh playtest through the Studio MCP — not when it compiles.
+- **Copy, don't link.** A game owns its copy of a system; improvements are copied back into the hub deliberately.
+- **Lessons flow back.** When a game teaches something new, it goes into `skills/roblox-lessons`.
+- **Vendored content is curated.** Third-party skills are copied by hand (never via installers), pinned to a commit, kept under their license and documented in `SOURCE.md`. Content that tries to steer the agent ("load me first", "override other rules") is removed.
+
+## License
+
+The hub's own content is [MIT](LICENSE). Vendored skills and ProfileStore keep their own licenses (MIT or Apache-2.0) — see each folder's `LICENSE` / `SOURCE.md` and the note at the end of [`LICENSE`](LICENSE).

@@ -13,7 +13,7 @@ systems/<area>/<system>/
 └── tests/           → copy to tests/ (specs for pure modules)
 ```
 
-File suffixes follow the template: `.server.lua` Script, `.client.lua` LocalScript, `.lua` ModuleScript, `.spec.lua` TestEZ spec. No game-specific names (no dinos, eggs, plates, rebirths) — use neutral words (currency, income, item, reward).
+File suffixes follow the template: `.server.lua` Script, `.client.lua` LocalScript, `.lua` ModuleScript, `.spec.lua` TestEZ spec. No game-specific names (no species, eggs, plates, rebirths) — use neutral words (currency, income, item, reward).
 
 ## Settings
 
@@ -48,4 +48,4 @@ Each system ships `shared/<System>Config.lua` with all its tunables and their de
 - `selene` clean. Pure modules get TestEZ specs.
 
 ## README must include
-1. What it does (player-facing and technical) · 2. Depends on (other hub systems) · 3. Install: exact files → destinations, DataTemplate fields to add, config to edit, ids to create · 4. Remotes it creates · 5. How to verify in Studio via the MCP (concrete checks) · 6. Origin (which Dino Simulator files it came from and what changed).
+1. What it does (player-facing and technical) · 2. Depends on (other hub systems) · 3. Install: exact files → destinations, DataTemplate fields to add, config to edit, ids to create · 4. Remotes it creates · 5. How to verify in Studio via the MCP (concrete checks) · 6. Origin (which reference-game files it came from and what changed).

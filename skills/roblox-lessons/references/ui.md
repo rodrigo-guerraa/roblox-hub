@@ -19,7 +19,7 @@
 ## Phones (touch)
 - Roblox's thumbstick sits bottom-left and the jump button bottom-right — exactly where HUD menus and travel rows usually go. With a visible `PlayerGui.TouchGui`: keep HUD above `ThumbstickStart` and left of `JumpButton` (read their AbsolutePosition at runtime).
 - Roblox's chat button sits top-left under the top bar.
-- MCP mouse clicks don't reach the game while Studio's device emulator is on — ask the human to tap-test; screenshots also don't render the 3D world/ViewportFrames in emulation.
+- MCP mouse clicks don't reach the game while Studio's device emulator is on — ask the maintainer to tap-test; screenshots also don't render the 3D world/ViewportFrames in emulation.
 
 ## Layering (DisplayOrder) that worked
 HUD 2–4 · modal windows 5 · notices/dialogue 6 · celebration reveals 7 · tutorial 9 · screen effects 20 · loading 100. Toasts that explain a refusal ("not available in your region") must draw above the window that triggered them.

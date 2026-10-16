@@ -1,6 +1,6 @@
 # Survey: Roblox tools, libraries and AI skill repos (October 2026)
 
-Checked on GitHub (activity, stars, license); skill repos read as text only, nothing installed or run. Lens: **all development is done by AI**, so what matters is what catches AI mistakes and what the AI knows well.
+Checked on GitHub (activity, stars, license); skill repos read as text only, nothing installed or run. Lens: **development is AI-driven**, so what matters is what catches AI mistakes and what the AI knows well.
 
 ## Tools (template pins these in `rokit.toml`)
 | Tool | Verdict |
@@ -18,7 +18,7 @@ Checked on GitHub (activity, stars, license); skill repos read as text only, not
 ## Libraries
 - Use: ProfileStore (saving), RbxUtil (Signal/Trove/...), roblox-lua-promise, TopbarPlus.
 - Maybe later: Blink/Zap (schema → generated, validated networking), Cmdr (human live-testing console).
-- Avoid for AI work: Fusion/Vide/Charm/jecs (less well known to AI, Fusion has breaking versions — our own documented UI kit is safer); Knit (archived).
+- Avoid for AI work: Fusion/Vide/Charm/jecs (less well known to AI, Fusion has breaking versions — the hub's documented UI kit is safer); Knit (archived).
 
 ## AI skill repos
 | Repo | License | Verdict | Take |
@@ -30,12 +30,12 @@ Checked on GitHub (activity, stars, license); skill repos read as text only, not
 | nonlooped/roblox-suite | MIT | Reference | Cherry-pick roblox-datastores, roblox-open-cloud, roblox-rojo, roblox-teleport. Its testing skill is outdated; receipt dedupe is in-memory. |
 | andrian-syh/roblox-best-practices-skill | MIT | Reference | cases/monetization.md, false-positives.md. Says "version the store name" (wipes players), forces comment banners, has a "carry this verbatim through compaction" card. Don't install. |
 | luumenlabs/luau-skills | MIT | Reference | luau-types, luau-performance at most; dead doc references. |
-| sentinelcore/roblox-skills | none | Reference | Source of our `roblox-gui` SKILL.md; animations + performance useful; datastores advice weak. |
+| sentinelcore/roblox-skills | none | Reference | Source of the hub's `roblox-gui` SKILL.md; animations + performance useful; datastores advice weak. |
 | brockmartin/roblox-game-skill | none | Skip | One-shot AI generated; contradicts itself on receipts; outdated MCP detection. |
 | "Best … 2026" repos, exploit tools | — | Avoid | Spam/malware-bait pattern. |
 
-None of them cover our own gotchas (TextScaled, GuiInset, canvas sizing, Open Cloud limits) → `skills/roblox-lessons`.
+None of them cover the hub's own gotchas (TextScaled, GuiInset, canvas sizing, Open Cloud limits) → `skills/roblox-lessons`.
 
 ## Follow-ups found
-- Dino Simulator: `BadgeService:AwardBadge` is deprecated → `AwardBadgeAsync` (confirmed in creator-docs).
+- Reference game: `BadgeService:AwardBadge` is deprecated → `AwardBadgeAsync` (confirmed in creator-docs).
 - `MarketplaceService:BindReceiptHandler` is a newer alternative to ProcessReceipt (ProcessReceipt still works).

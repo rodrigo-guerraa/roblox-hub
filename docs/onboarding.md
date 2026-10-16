@@ -1,6 +1,6 @@
 # Onboarding — starting a new Roblox game with AI
 
-Who does what: **the AI (Claude Code) writes, tests and commits all code.** The owner decides design, art, prices and publishing, makes images/models, tests on real devices, and pushes commits.
+Default split of work: **the AI (Claude Code) writes, tests and commits all code.** You decide design, art, prices and publishing, make images and models, test on real devices, and push commits.
 
 ## 0. One-time machine setup
 - Roblox Studio, VS Code with the Rojo extension, git.
@@ -9,7 +9,7 @@ Who does what: **the AI (Claude Code) writes, tests and commits all code.** The 
 - A workspace folder that holds the hub and every game side by side, e.g. `roblox/roblox-hub`, `roblox/my-game`.
 - Hub skills installed for every project: `powershell -ExecutionPolicy Bypass -File roblox-hub\scripts\sync-skills.ps1` (re-run when the hub's skills change).
 
-## 1. Create the project (owner + AI)
+## 1. Create the project (you + AI)
 1. Copy `roblox-hub/template/` to a new folder next to the hub (`<workspace>/<game-name>`); `git init`.
 2. `rokit install`, then `wally install`.
 3. Rename the game in `default.project.json` and `wally.toml`.
@@ -20,25 +20,25 @@ Who does what: **the AI (Claude Code) writes, tests and commits all code.** The 
 ## 2. Pull in hub systems (AI)
 Start from `docs/reuse-catalog.md`. Typical simulator: core (data, economy, remotes, format) → UI kit → monetization (receipts, gamepasses, paid-random-items, offline earnings) → live-ops (codes, playtime gifts, group rewards, badges, social prompts). Each system's README has the exact files, saved fields and config. Document each one in the game's `CLAUDE.md` as it lands.
 
-## 3. Build the game (AI, owner reviews in Studio)
+## 3. Build the game (AI, you review in Studio)
 - One vertical slice at a time, each verified in Studio through the MCP (skill: `roblox-to-issues`).
 - Worlds come from a builder script in `tools/` that's re-run, not hand-placed objects.
-- Art: the owner imports models/meshes; anything with a script is rejected (skill: `roblox-creator-store-security-audit`). Studio-made art lives in the place file — **save the place**.
+- Art: you import models/meshes; anything with a script is rejected (skill: `roblox-creator-store-security-audit`). Studio-made art lives in the place file — **save the place**.
 - Read `roblox-lessons` before UI, saving, monetization or publishing work.
 
-## 4. Things only the owner can do
+## 4. Things only you can do
 - Create the group / decide group-owned vs personal; make an **Open Cloud API key** scoped to this game (store it outside the repo, e.g. `%USERPROFILE%\.<game>_api_key.txt`). With it, Claude can create passes and products, set icons, server size, name, description and voice chat (see `roblox-lessons/references/open-cloud.md`).
 - Prices and anything spending Robux; the Maturity & Compliance questionnaire (answer paid random items honestly); game icon, thumbnails, trailer; making the game public (dashboard).
 - Generate images (icons for passes/products/badges, thumbnails) — Claude writes the prompts and uploads what the API allows.
 - Test on a real phone; buy one cheap product live; test passes with an alt (the creator owns its own passes).
 
 ## 5. Release
-Skills: `roblox-publish-checklist`, `roblox-release-operations`. Keep a `RELEASE_CHECKLIST.md` in the game (Dino Simulator's is a good model). Publish from Studio with Rojo synced; then run the live test.
+Skills: `roblox-publish-checklist`, `roblox-release-operations`. Keep a `RELEASE_CHECKLIST.md` in the game. Publish from Studio with Rojo synced; then run the live test.
 
 ## 6. After every game
 - New gotcha learned → add it to `skills/roblox-lessons/references/` (+ re-run the sync script).
 - Improved a shared system → copy the improvement back into `systems/` and note it in the system's README.
-- Commit to the hub; the owner pushes.
+- Commit to the hub, then push.
 
 ## A new AI session on an existing game
 Claude reads the game's `CLAUDE.md` (the project's memory) and the `roblox-lessons` skill. Keep `CLAUDE.md` current — it's how the next session knows what exists.

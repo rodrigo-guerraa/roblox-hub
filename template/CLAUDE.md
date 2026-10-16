@@ -4,7 +4,12 @@
 
 <One paragraph: what the game is, who it's for (audience/age), the core loop, and how it makes money. Fill this in on day one; update it when the design changes.>
 
-All development is done by AI (Claude Code). The human owner makes the design, art, money and publishing decisions, tests feel on real devices, and does all git pushes.
+---
+
+## Team conventions (defaults — edit for your project)
+
+- Claude Code writes, tests and commits the code.
+- The maintainer makes the design, art, pricing and publishing decisions, tests feel on real devices, and does all git pushes.
 
 ---
 
@@ -64,7 +69,7 @@ New modules should start with `--!strict` when practical; the project default is
 
 Specs live in `tests/` as `<Module>.spec.lua`; only pure-Lua shared modules get specs. `TestRunner` (server, Studio-only) runs them when `ReplicatedStorage.Tests` has the attribute `RunTests = true`: set it in Edit, press Play, read the console, then set it back to `false`.
 
-TestEZ is archived upstream but works; jest-lua is Roblox's successor if we ever migrate.
+TestEZ is archived upstream but works; jest-lua is Roblox's successor if the project migrates.
 
 ---
 
@@ -77,10 +82,10 @@ TestEZ is archived upstream but works; jest-lua is Roblox's successor if we ever
 5. **Server authority is strict.** Currency, inventory and progression change only on the server; clients display what the server sends.
 6. **`shared.X = T` publishes before any yield and with all methods attached.** Server scripts run concurrently; consumers read `shared.X` the instant it lands.
 7. **Verification trust order:** (a) the original error is gone after a fresh Play, (b) runtime state observed through the Studio MCP, (c) specs, (d) `selene`. Never treat `shared.*` read from MCP `execute_luau` as truth — that runs in a sandboxed plugin context.
-8. **Verify in Studio through the Roblox Studio MCP, end to end.** Start/stop Play, read the console, inspect server and client state, fire remotes (including forged payloads, which must be rejected), trigger prompts, and screenshot anything visual. Prove every observable behaviour the change adds; if something can't be exercised in Studio, say so and why. Remove temporary instances afterwards. Never put diagnostic prints in production scripts or hand the owner Command Bar snippets.
+8. **Verify in Studio through the Roblox Studio MCP, end to end.** Start/stop Play, read the console, inspect server and client state, fire remotes (including forged payloads, which must be rejected), trigger prompts, and screenshot anything visual. Prove every observable behaviour the change adds; if something can't be exercised in Studio, say so and why. Remove temporary instances afterwards. Never put diagnostic prints in production scripts or hand the maintainer Command Bar snippets.
 9. **When a fix produces a new error of similar shape, re-derive — don't patch.** Re-read the affected file end to end and fix the ordering once.
-10. **Imported assets never contain scripts** (third-party models with scripts can be malware). Any exception is approved by the owner and reviewed first.
-11. **Real money and publishing are the owner's call.** Creating products, changing prices, publishing or changing visibility need an explicit go-ahead.
+10. **Imported assets never contain scripts** (third-party models with scripts can be malware). Any exception is approved by the maintainer and reviewed first.
+11. **Real money and publishing are the maintainer's call.** Creating products, changing prices, publishing or changing visibility need an explicit go-ahead.
 
 ## How Claude Should Work
 
@@ -88,7 +93,7 @@ TestEZ is archived upstream but works; jest-lua is Roblox's successor if we ever
 - Read only the files the task needs; never re-read a file already in context.
 - Implement the change, verify it, then stop. No unrequested refactors or features.
 - If the task is ambiguous, ask one clarifying question.
-- Commit when a change is verified; the owner pushes.
+- Commit when a change is verified; the maintainer pushes.
 - Keep this file current: every system, remote, saved field and world object gets documented here as it's built.
 
 ---

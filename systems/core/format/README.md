@@ -43,7 +43,7 @@ None.
 
 ## 6. Origin
 
-Dino Simulator `src/shared/NumberFormat.lua` and `tests/NumberFormat.spec.lua`. Changes:
+Extracted from the reference game's `src/shared/NumberFormat.lua` and `tests/NumberFormat.spec.lua`. Changes:
 - The `$` became `NumberFormat.CURRENCY`.
 - Sp, Oc, No and Dc suffixes were added.
 - NaN is guarded.

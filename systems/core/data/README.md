@@ -109,7 +109,7 @@ None.
 
 ## 6. Origin
 
-Dino Simulator:
+Extracted from the reference game (a shipped Roblox simulator):
 - `src/server/DataService.server.lua`. Kept: the ProfileStore session flow, the Studio store suffix, migrate-before-reconcile, the kick statuses, `lastSeen`, and the `GetData` / `WaitForData` gating. All game getters and setters (coins, species, eggs, plates, rebirths, ...) were removed, and so was the Studio coin grant, which moved to core/economy as `STUDIO_START_BALANCE`. Added: the `PlayerLoaded` signal, a failed-load flag so `WaitForData` returns `nil` immediately, and argument validation.
 - `src/shared/SaveMigrations.lua`. The baseline and steps now come from the game-owned `DataConfig.MIGRATION_BASELINE` and `DataMigrations.lua`, plus a NaN-version guard.
 - `tests/SaveMigrations.spec.lua`. Adapted to `DataConfig`, with template-version and nil/NaN cases added.

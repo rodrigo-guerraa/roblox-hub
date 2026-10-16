@@ -52,12 +52,12 @@ Then edit `src/shared/UIConfig.lua`:
 | `LoadingScreen.icon`, `topColor`, `bottomColor`, `barColor` | star, greens, orange | Look |
 | `Music.enabled` / `muteButton` / `buttonOrder` | `true`, `true`, `9` | |
 | `Music.tracks` | 3 APM library tracks | `{ id, volume }` list, shuffled |
-| `Music.ambience` | `nil` | A looped `{ id, volume }` bed. Dino Simulator used jungle ambience `rbxassetid://9112805601` (volume 0.3) |
+| `Music.ambience` | `nil` | A looped `{ id, volume }` bed. The reference game used jungle ambience `rbxassetid://9112805601` (volume 0.3) |
 | `Sounds` | `{}` | Extra or replacement `SoundFX` entries, `name = { id, volume?, pitch? }` |
 
 No DataTemplate fields, no ids to create.
 
-**Icons.** `Icons.lua` holds images from the user's own cartoon icon pack (uploaded to their account), usable in any of their games: `Book, Quests, Trophy, Store, Crown, CashBag, Rebirth, House, Egg, Coin, Gem, Gift, Lock, Settings, SoundOn, SoundOff, CoinStack, Star, Codes, Friends, Click`. Add new ids here, never inline in UIs.
+**Icons.** `Icons.lua` holds image ids from a cartoon icon pack uploaded to the original author's account; replace them with your own pack's ids: `Book, Quests, Trophy, Store, Crown, CashBag, Rebirth, House, Egg, Coin, Gem, Gift, Lock, Settings, SoundOn, SoundOff, CoinStack, Star, Codes, Friends, Click`. Add new ids here, never inline in UIs.
 
 **Sounds.** Every `SoundFX` id is Roblox-licensed library audio (APM Music, Pro Sound Effects) or an engine-bundled `rbxasset://sounds` file, so it plays in any game. Names: `click` (every kit button), `coin` (every `FlyCoins`), `pop`, `crack`, `reveal`, `levelup`, `fanfare`, `victory`, `deny`, `talk`, `dialogOpen`, `dialogClose`. `SoundFX.play(name, { gap, jitter, pitch, volume })`; an unknown name is a no-op.
 
@@ -125,12 +125,12 @@ All builders take `(parent, props)` and return the instance. **Common props** (e
 4. **Effects**: in the `Client`, `require(PlayerScripts.Effects).FlyCoins(Vector2.new(400, 400), 8, "+$50")` → coins fly to the counter; `screen_capture` mid-flight.
 5. **Windows / HUD**: build a test `UIStyle.window({ key = "Test", title = "TEST" })`, `UIManager.open("Test")`, screenshot; HUD tiles under it hide (`Visible = false`). Escape or the X closes it.
 6. **Layout on two screens** — `screen_capture` on desktop, then with Studio's device emulator on **iPhone 14 landscape**. For each window/HUD element, read `AbsolutePosition`/`AbsoluteSize` and confirm it lies inside `workspace.CurrentCamera.ViewportSize` (convert with `screenTop/screenBottom`), that labels' `TextBounds` aren't tiny inside big boxes, and that the menu sits above `TouchGui…ThumbstickStart` and the travel row left of `JumpButton`.
-7. **Known MCP limits**: mouse clicks don't reach the game while the device emulator is on (ask the human to tap-test, or fire the `Activated` handler logic from `execute_luau`); emulator screenshots don't render the 3D world or ViewportFrames; `execute_luau` connections die when the call returns (store captured values as attributes); moving the camera cancels ProximityPrompt holds.
+7. **Known MCP limits**: mouse clicks don't reach the game while the device emulator is on (tap-test by hand, or fire the `Activated` handler logic from `execute_luau`); emulator screenshots don't render the 3D world or ViewportFrames; `execute_luau` connections die when the call returns (store captured values as attributes); moving the camera cancels ProximityPrompt holds.
 8. **Spec**: run `tests/UIManager.spec.lua` with the template's TestRunner.
 
 ## 7. Origin
 
-From Dino Simulator (`dino-game/src`):
+Extracted from the reference game's `src` (a shipped Roblox simulator):
 
 | Kit file | Source | Changes |
 | --- | --- | --- |
@@ -140,4 +140,4 @@ From Dino Simulator (`dino-game/src`):
 | `SoundFX.lua` | `client/SoundFX.lua` | Dropped `dig`, `dig2`, `roar`; `rebirth` renamed `fanfare`. Music and ambience moved to `UIConfig.Music`; `UIConfig.Sounds` merges extra entries. |
 | `Music.client.lua` | `client/Music.client.lua` | Reads `UIConfig.Music` (enable, mute tile, order, tracks, optional ambience). |
 | `LoadingScreen.client.lua` | `client/LoadingScreen.client.lua` | Wait list (events with optional re-pull request, and Player attributes), title, icon, colours and timeout come from `UIConfig`; remotes resolved through core `Remotes`. |
-| `CurrencyDisplay.client.lua` | `client/CoinDisplay.client.lua` | Reads the `Currency` / `IncomePerSecond` Player attributes instead of dino remotes and client-side CPS math; ScreenGui renamed `CurrencyDisplay`; registers its `Footprint` as a top card and its `Panel` as the Effects target; the income pill hides when there is no income attribute. |
+| `CurrencyDisplay.client.lua` | `client/CoinDisplay.client.lua` | Reads the `Currency` / `IncomePerSecond` Player attributes instead of the reference game's remotes and client-side CPS math; ScreenGui renamed `CurrencyDisplay`; registers its `Footprint` as a top card and its `Panel` as the Effects target; the income pill hides when there is no income attribute. |

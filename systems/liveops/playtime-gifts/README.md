@@ -32,7 +32,7 @@
 | Key | Default | Meaning |
 | --- | --- | --- |
 | `INTERVAL` | `600` | Online seconds per gift |
-| `SECONDS_LADDER` | `{ 60, 90, 120, 150, 180 }` | Gift N of a session pays this many seconds of income. In Dino this was about +20% income over an hour. |
+| `SECONDS_LADDER` | `{ 60, 90, 120, 150, 180 }` | Gift N of a session pays this many seconds of income. In the reference game this was about +20% income over an hour. |
 | `MIN` | `1000` | Floor for brand-new players |
 | `WINDOW_KEY` | `"Gift"` | `UIManager` name |
 | `HUD_ORDER` | `0` | Tile order (first in the menu) |
@@ -63,7 +63,7 @@ To have the loading screen wait for it, add `{ event = "UpdateGift", request = "
 
 ## 6. Origin
 
-Dino Simulator `src/server/GiftService.server.lua`, `src/client/GiftUI.client.lua`, `EconomyMath.GiftPayout` (`src/shared/EconomyMath.lua`) and its `GiftPayout` cases in `tests/EconomyMath.spec.lua`.
+Extracted from the reference game's `src/server/GiftService.server.lua`, `src/client/GiftUI.client.lua`, `EconomyMath.GiftPayout` (`src/shared/EconomyMath.lua`) and its `GiftPayout` cases in `tests/EconomyMath.spec.lua`.
 - `GiftPayout` became `GiftMath.Payout`, with an optional config argument and clamping for bad gift numbers. `Progress`/`IsReady` were pulled out of the service so they could be tested.
 - Income comes from `EconomyAPI.GetIncome` (server) and the `IncomePerSecond` attribute (client) instead of `PlateServiceAPI.GetActiveCPS` and `ActiveCPS`.
 - Payment goes through `EconomyAPI.Grant`; no `UpdateCoins` fire.

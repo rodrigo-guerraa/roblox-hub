@@ -3,7 +3,7 @@
 ## 1. What it does
 
 **Player-facing:**
-- An "Invite" HUD tile opens Roblox's invite-friends prompt. There is **no reward for inviting**, since incentivized invites are not allowed for a kids audience. Accounts that can't send invites don't see the tile.
+- An "Invite" HUD tile opens Roblox's invite-friends prompt. There is **no reward for inviting**, since incentivized invites are not allowed for a young audience. Accounts that can't send invites don't see the tile.
 - Once per player ever, at a high point the game chooses (the first rebirth, the first boss, the first big unlock), Roblox's "favorite this experience?" prompt appears a few seconds after the celebration. It is skipped if they already favorited.
 
 **Technical:**
@@ -62,7 +62,7 @@ None. The trigger is a server-written Player attribute, which replicates to the 
 
 ## 6. Origin
 
-Dino Simulator `src/client/SocialPrompts.client.lua`.
-- The trigger was "the client saw `UpdateRebirths` go 0 → 1 live". It is now any game's server setting `FavoritePromptMoment` through `SocialPromptsAPI.FavoriteMoment`, with a saved `favoritePromptShown` flag. That makes it once per player across sessions, where Dino's was implied by the rebirth count.
+Extracted from the reference game's `src/client/SocialPrompts.client.lua`.
+- The trigger was "the client saw `UpdateRebirths` go 0 → 1 live". It is now any game's server setting `FavoritePromptMoment` through `SocialPromptsAPI.FavoriteMoment`, with a saved `favoritePromptShown` flag. That makes it once per player across sessions, where the original was implied by the rebirth count.
 - Options moved into `SocialPromptsConfig`.
 - The invite tile is unchanged apart from config.
