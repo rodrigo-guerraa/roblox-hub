@@ -51,7 +51,7 @@ Everything in the hub that a new game can take, and what it costs to take it. Ea
 | `roblox-creator-store-security-audit`, `roblox-security-economy`, `roblox-release-operations` | Asset audits, economy exploits, releasing and rolling back | AshExplained (MIT) |
 | `game-feel`, `game-ui-ux`, `level-design`, `audio-design`, `save-systems` | Engine-agnostic design craft, adapted for Roblox | gamedev-skills (Apache-2.0) |
 
-Every vendored skill has `SOURCE.md` (pinned commit, license, local changes) and says `roblox-lessons` wins on conflicts.
+Vendored skills live in `skills/vendored/` (index: [`skills/vendored/README.md`](../skills/vendored/README.md)). Every one has `SOURCE.md` (pinned commit, license, local changes) and says `roblox-lessons` wins on conflicts.
 
 ## Template (`template/`)
 Empty game with pinned tools (Rojo 7.7.1, Wally, Selene 0.32, StyLua 2.6, luau-lsp 1.70.1, Lune 0.11), lint/format/type-check configs, TestEZ runner, starter `CLAUDE.md`. ✅ builds; first Studio run happens with the first new game.

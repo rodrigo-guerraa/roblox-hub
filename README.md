@@ -10,7 +10,7 @@ It packages what shipping a Roblox simulator this way taught us: a project templ
 | --- | --- |
 | [`template/`](template/) | An empty Rojo project: pinned toolchain (Rojo, Wally, Selene, StyLua, luau-lsp, Lune), lint/format/type-check configs, a TestEZ runner and a starter `CLAUDE.md` with working rules for the agent. |
 | [`systems/`](systems/) | Reusable game systems, copied into a game rather than linked: **core** (save data with migrations, economy, remotes, number formatting), a cartoon-style **UI kit**, **monetization** (receipts, game passes, paid-random-items policy, offline earnings) and **live-ops** (codes, playtime gifts, group rewards, badges, social prompts). They share one contract: [`systems/CONVENTIONS.md`](systems/CONVENTIONS.md). |
-| [`skills/`](skills/) | 19 Claude Code skills. [`roblox-lessons`](skills/roblox-lessons/) is original; 18 are curated from public skill collections — trimmed, corrected and pinned, each with its license and a `SOURCE.md` describing the changes. |
+| [`skills/`](skills/) | Claude Code skills. [`roblox-lessons`](skills/roblox-lessons/) is original: the gotchas learned shipping a game. [`skills/vendored/`](skills/vendored/) holds 18 skills curated from public collections — trimmed, corrected and pinned, each with its license and a `SOURCE.md` describing the changes. |
 | [`docs/`](docs/) | [Onboarding](docs/onboarding.md), the [reuse catalog](docs/reuse-catalog.md) and a [survey](docs/research/2026-10-skill-and-tool-survey.md) of Roblox tools, libraries and AI skill repos. |
 | [`scripts/`](scripts/) | Maintenance scripts, e.g. installing the skills for every project. |
 
@@ -26,7 +26,7 @@ It packages what shipping a Roblox simulator this way taught us: a project templ
    ```powershell
    powershell -ExecutionPolicy Bypass -File roblox-hub\scripts\sync-skills.ps1
    ```
-   This copies `skills/*` into `%USERPROFILE%\.claude\skills\`, replacing only the folders the hub owns. Re-run it after pulling skill updates.
+   This copies `skills/*` and `skills/vendored/*` into `%USERPROFILE%\.claude\skills\`, replacing only the folders the hub owns. Re-run it after pulling skill updates.
 3. Start a new game from the template by following [`docs/onboarding.md`](docs/onboarding.md) — or open a Claude Code session in an empty folder next to the hub and ask it to start a game from `../roblox-hub`.
 
 **Requirements:** Roblox Studio with its built-in MCP server enabled (the agent verifies every change through it), the Rojo Studio plugin, [Rokit](https://github.com/rojo-rbx/rokit), git and Claude Code.
