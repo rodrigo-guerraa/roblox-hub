@@ -23,4 +23,4 @@ Copies `skills/*` into `%USERPROFILE%\.claude\skills\`. Re-run after the hub's s
 - **Vendoring third-party skills:** copy chosen files by hand (never run installers), pin the source commit, keep the license, and record source + changes in a `SOURCE.md` next to them. Repos with no license are reference-only.
 - **Systems are copied into games, not linked.** A game owns its copy; improvements are copied back here deliberately.
 - **Lessons flow back.** When a game teaches something new, add it to `skills/roblox-lessons/references/`.
-- Origin: built from Dino Simulator ("[BETA] +1 Hatch a Dino!"), `C:\Users\Digo\roblox\dino-game`.
+- Origin: distilled from shipping a Roblox simulator built end to end with Claude Code.

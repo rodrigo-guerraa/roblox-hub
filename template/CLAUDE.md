@@ -10,7 +10,7 @@ All development is done by AI (Claude Code). The human owner makes the design, a
 
 ## Shared Hub
 
-This game was started from `C:\Users\Digo\roblox\roblox-hub`. Before building a system, check the hub:
+This game was started from the `roblox-hub` folder that sits next to it (`../roblox-hub`). Before building a system, check the hub:
 
 - `roblox-hub/skills/` — Roblox skills (installed user-wide). **`roblox-lessons` is required reading**: it holds the gotchas earlier games paid for.
 - `roblox-hub/systems/` — proven game systems (saving, UI kit, monetization, live-ops) to copy in rather than rewrite.

@@ -4,7 +4,7 @@ Base URL `https://apis.roblox.com`, header `x-api-key`. Docs index: `https://cre
 
 ## Keys
 - A key is owned by a user or a group; it only reaches that owner's games. Group-owned game → group key (the owner's role permissions cap it).
-- Store the key in a file **outside the repo** (e.g. `C:\Users\<you>\.<game>_api_key.txt` — Windows may append `.txt`); read it into a shell variable, never echo it, never paste it in chat.
+- Store the key in a file **outside the repo** (e.g. `%USERPROFILE%\.<game>_api_key.txt` — Windows may append `.txt`); read it into a shell variable, never echo it, never paste it in chat.
 - Check what a key can do: `POST /api-keys/v1/introspect` with `{"apiKey": "..."}` → scopes, universe limits, expiry.
 - Scope names matter exactly: `universe.place` (dot) edits place settings; `universe-places` (dash) only publishes place files.
 - Keys auto-expire (set one) and expire after long non-use; delete the file when done.

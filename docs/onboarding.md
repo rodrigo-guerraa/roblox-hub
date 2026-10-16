@@ -6,10 +6,11 @@ Who does what: **the AI (Claude Code) writes, tests and commits all code.** The 
 - Roblox Studio, VS Code with the Rojo extension, git.
 - Rokit (https://github.com/rojo-rbx/rokit) — installs every other tool per project.
 - In Studio: Assistant settings → enable the **Studio MCP server**; Rojo plugin installed.
-- Hub skills installed for every project: `powershell -ExecutionPolicy Bypass -File C:\Users\Digo\roblox\roblox-hub\scripts\sync-skills.ps1` (re-run when the hub's skills change).
+- A workspace folder that holds the hub and every game side by side, e.g. `roblox/roblox-hub`, `roblox/my-game`.
+- Hub skills installed for every project: `powershell -ExecutionPolicy Bypass -File roblox-hub\scripts\sync-skills.ps1` (re-run when the hub's skills change).
 
 ## 1. Create the project (owner + AI)
-1. Copy `roblox-hub/template/` to `C:\Users\Digo\roblox\<game-name>`; `git init`.
+1. Copy `roblox-hub/template/` to a new folder next to the hub (`<workspace>/<game-name>`); `git init`.
 2. `rokit install`, then `wally install`.
 3. Rename the game in `default.project.json` and `wally.toml`.
 4. Fill in the top of `CLAUDE.md`: what the game is, the audience (age!), core loop, how it makes money.
@@ -26,7 +27,7 @@ Start from `docs/reuse-catalog.md`. Typical simulator: core (data, economy, remo
 - Read `roblox-lessons` before UI, saving, monetization or publishing work.
 
 ## 4. Things only the owner can do
-- Create the group / decide group-owned vs personal; make an **Open Cloud API key** scoped to this game (store it outside the repo, e.g. `C:\Users\Digo\.<game>_api_key.txt`). With it, Claude can create passes and products, set icons, server size, name, description and voice chat (see `roblox-lessons/references/open-cloud.md`).
+- Create the group / decide group-owned vs personal; make an **Open Cloud API key** scoped to this game (store it outside the repo, e.g. `%USERPROFILE%\.<game>_api_key.txt`). With it, Claude can create passes and products, set icons, server size, name, description and voice chat (see `roblox-lessons/references/open-cloud.md`).
 - Prices and anything spending Robux; the Maturity & Compliance questionnaire (answer paid random items honestly); game icon, thumbnails, trailer; making the game public (dashboard).
 - Generate images (icons for passes/products/badges, thumbnails) — Claude writes the prompts and uploads what the API allows.
 - Test on a real phone; buy one cheap product live; test passes with an alt (the creator owns its own passes).
