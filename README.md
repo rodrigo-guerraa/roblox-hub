@@ -1,5 +1,7 @@
 # roblox-hub
 
+[![CI](https://github.com/rodrigo-guerraa/roblox-hub/actions/workflows/ci.yml/badge.svg)](https://github.com/rodrigo-guerraa/roblox-hub/actions/workflows/ci.yml)
+
 A toolkit for building Roblox games where **the code is written, tested and maintained by an AI agent** ([Claude Code](https://claude.com/claude-code)) and a human makes the design, art and business calls.
 
 It packages what shipping a Roblox simulator this way taught us: a project template wired for AI guardrails, game systems you can drop into a new game, and "skills" — knowledge files the agent loads on demand — including a hard-won list of Roblox gotchas.
@@ -12,7 +14,7 @@ It packages what shipping a Roblox simulator this way taught us: a project templ
 | [`systems/`](systems/) | Reusable game systems, copied into a game rather than linked: **core** (save data with migrations, economy, remotes, number formatting), a cartoon-style **UI kit**, **monetization** (receipts, game passes, paid-random-items policy, offline earnings) and **live-ops** (codes, playtime gifts, group rewards, badges, social prompts). They share one contract: [`systems/CONVENTIONS.md`](systems/CONVENTIONS.md). |
 | [`skills/`](skills/) | Claude Code skills. [`roblox-lessons`](skills/roblox-lessons/) is original: the gotchas learned shipping a game. [`skills/vendored/`](skills/vendored/) holds 18 skills curated from public collections — trimmed, corrected and pinned, each with its license and a `SOURCE.md` describing the changes. |
 | [`docs/`](docs/) | [Onboarding](docs/onboarding.md), the [reuse catalog](docs/reuse-catalog.md) and a [survey](docs/research/2026-10-skill-and-tool-survey.md) of Roblox tools, libraries and AI skill repos. |
-| [`scripts/`](scripts/) | Maintenance scripts, e.g. installing the skills for every project. |
+| [`scripts/`](scripts/) | Installing the skills for every project, and the CI helpers: `assemble-sandbox.sh` builds the template with every system dropped in, which CI format-checks, lints and builds on every push. |
 
 ## Quick start
 
@@ -35,9 +37,9 @@ It packages what shipping a Roblox simulator this way taught us: a project templ
 
 | Part | State |
 | --- | --- |
-| `template/` | Builds and lints clean. |
+| `template/` | Builds, lints and format-checks clean in CI. |
 | `skills/` | Ready to use. |
-| `systems/` | Extracted from the shipped game and made game-agnostic. The full stack builds and lints clean together, but the generic versions **have not yet been run in Studio** — expect the first game that adopts them to find and fix a few issues (their READMEs list the checks to run). |
+| `systems/` | Extracted from the shipped game and made game-agnostic. CI assembles the template with every system and keeps it formatted, lint-clean and building, but the generic versions **have not yet been run in Studio** — expect the first game that adopts them to find and fix a few issues (their READMEs list the checks to run). |
 
 ## Principles
 
