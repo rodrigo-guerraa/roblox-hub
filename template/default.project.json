@@ -1,0 +1,47 @@
+{
+  "name": "Game",
+  "tree": {
+    "$className": "DataModel",
+
+    "ServerScriptService": {
+      "$className": "ServerScriptService",
+      "$path": "src/server"
+    },
+
+    "StarterPlayer": {
+      "$className": "StarterPlayer",
+      "StarterPlayerScripts": {
+        "$className": "StarterPlayerScripts",
+        "$path": "src/client"
+      }
+    },
+
+    "ReplicatedStorage": {
+      "$className": "ReplicatedStorage",
+      "$path": "src/shared",
+      "DevPackages": {
+        "$path": "DevPackages"
+      },
+      "Tests": {
+        "$path": "tests"
+      },
+      "Models": {
+        "$className": "Folder",
+        "$ignoreUnknownInstances": true
+      }
+    },
+
+    "ServerStorage": {
+      "$className": "ServerStorage",
+      "$ignoreUnknownInstances": true,
+      "Tools": {
+        "$path": "tools"
+      }
+    },
+
+    "Workspace": {
+      "$className": "Workspace",
+      "$ignoreUnknownInstances": true
+    }
+  }
+}

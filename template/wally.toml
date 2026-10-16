@@ -1,0 +1,8 @@
+[package]
+name = "studio/game"
+version = "0.1.0"
+registry = "https://github.com/UpliftGames/wally-index"
+realm = "server"
+
+[dev-dependencies]
+TestEZ = "roblox/testez@0.4.1"

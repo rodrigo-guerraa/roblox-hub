@@ -1,0 +1,8 @@
+DevPackages/
+Packages/
+*.rbxl
+*.rbxlx
+*.rbxl.lock
+*.rbxlx.lock
+sourcemap.json
+.claude/settings.local.json
