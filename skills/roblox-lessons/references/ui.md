@@ -7,7 +7,7 @@
 - Glyphs like ✓ may be missing from cartoon fonts; use a font that has them (GothamBold) for those labels.
 
 ## Positions and insets
-- `GuiObject.AbsolutePosition` is relative to the ScreenGui's canvas. For a ScreenGui **without** `IgnoreGuiInset`, the canvas starts below the top bar (`GuiService:GetGuiInset().Y`, ~58 px on phones, ~36 on desktop). Placing one layer from another's AbsolutePosition across mismatched inset settings misplaces it by that amount. Convert: screen Y = AbsolutePosition.Y + inset (for non-ignoring guis). Simplest: make every ScreenGui `IgnoreGuiInset = true` and keep content below the top bar yourself.
+- `GuiObject.AbsolutePosition` is measured from **below the top bar** (`GuiService:GetGuiInset().Y`, ~58 px on phones, ~36 on desktop) **for every ScreenGui** — measured on an iPhone 14 emulator: an `IgnoreGuiInset = true` ScreenGui reports its canvas at `AbsolutePosition.Y = -58`, a normal one at `0`. So screen Y = `AbsolutePosition.Y + inset`, always. Offsets you set inside an `IgnoreGuiInset` gui are screen pixels; offsets inside a normal gui start below the bar. Converting one into the other without the inset misplaces things by ~58 px (cards overlapping the coin counter). Simplest: make every ScreenGui `IgnoreGuiInset = true`, convert AbsolutePosition with `+ inset`, and keep content below the top bar yourself.
 - `GetGuiInset()` can read 0 right after join; re-apply layout periodically or on change.
 
 ## Sizing

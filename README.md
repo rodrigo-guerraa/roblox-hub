@@ -4,10 +4,10 @@ Shared toolkit for Roblox games built with AI (Claude Code). Every game starts f
 
 | Folder | What's in it | Status |
 | --- | --- | --- |
-| `skills/` | Skills the AI reads. `roblox-lessons` = our own gotchas from shipped games. Third-party skills are vendored here (trimmed, pinned, licensed). | `roblox-lessons` done; third-party picks: step 2 |
+| `skills/` | Skills the AI reads. `roblox-lessons` = our own gotchas from shipped games, plus 18 vendored third-party skills (trimmed, pinned, licensed; see `docs/reuse-catalog.md`). | Done |
 | `template/` | An empty game wired for AI development (Rojo, Wally, Selene, StyLua, luau-lsp, Lune, TestEZ, starter `CLAUDE.md`). | Done |
-| `systems/` | Proven game systems to copy into new games (saving, UI kit, monetization, live-ops). | Step 3 |
-| `docs/` | Onboarding, reuse catalog, research notes. | Research saved; onboarding + catalog: step 3 |
+| `systems/` | Game systems to copy into new games: core (data, economy, remotes, format), UI kit, monetization, live-ops. Contract in `systems/CONVENTIONS.md`. | Built + lint clean; first Studio run pending |
+| `docs/` | `onboarding.md`, `reuse-catalog.md`, research notes. | Done |
 | `scripts/` | Hub maintenance (e.g. installing skills user-wide). | Done |
 
 ## Install the skills (every project gets them)

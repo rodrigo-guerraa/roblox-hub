@@ -1,5 +1,8 @@
 std = "roblox+testez"
 
+# vendored third-party code is linted upstream, not here
+exclude = ["src/server/ProfileStore.lua"]
+
 
 [lints]
 global_usage = "allow"

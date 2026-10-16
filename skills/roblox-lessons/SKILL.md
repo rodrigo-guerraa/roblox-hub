@@ -10,7 +10,7 @@ Facts below were each learned by breaking something. They override generic advic
 ## The ten that bite most often
 
 1. **`TextWrapped = false` after `TextScaled = true` turns TextScaled off.** Set TextScaled last. → `references/ui.md`
-2. **`AbsolutePosition` is measured below the top bar** (~58 px on phones) unless the ScreenGui has `IgnoreGuiInset`. Convert before mixing layers. → `references/ui.md`
+2. **`AbsolutePosition` is always measured from below the top bar** (~58 px on phones), even in `IgnoreGuiInset` guis. Screen Y = AbsolutePosition.Y + inset. → `references/ui.md`
 3. **`AutomaticCanvasSize` undercounts rows sized by `UIAspectRatioConstraint`**, cutting off the end of lists. Size the canvas from `UIListLayout.AbsoluteContentSize`. → `references/ui.md`
 4. **Never rename a DataStore to change the save format** — that's a new empty store (everyone's progress gone). Migrate step by step instead. → `references/data.md`
 5. **Purchases: one receipt handler, dedupe by `PurchaseId` stored in the player's own save**, `NotProcessedYet` whenever unsure. → `references/monetization.md`

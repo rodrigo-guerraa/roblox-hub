@@ -1,0 +1,550 @@
+# roblox data persistence: full reference
+
+> Code examples are illustrative. Adapt them to your project and verify in Studio before production use.
+
+> **Hub note.** Where this conflicts with the `roblox-lessons` skill, `roblox-lessons` wins. Our games use **ProfileStore** for player profiles (see §8 and `roblox-lessons` `references/data.md`); the raw-DataStore sections explain the mechanics and apply to stores ProfileStore does not own (leaderboards, shared records). Never rename a store to change the save format; migrate in place (§6).
+
+This guide uses raw `DataStoreService` concepts and does not require a particular profile library. If the project already uses a session-locking wrapper, keep its lifecycle and failure semantics instead of mixing two ownership systems.
+
+## 1. Choose the storage primitive
+
+- **Player data store:** mutable per-player state such as inventory, settings, and progression.
+- **Ordered data store:** sorted numeric values for leaderboards. It is not a substitute for a player's profile.
+- **MessagingService:** short-lived cross-server notifications, not durable storage.
+- **MemoryStoreService:** temporary, expiring coordination or queues. Do not treat it as permanent player data.
+
+Keep the store name, schema version, and key format in one module. Use stable keys such as `player_<UserId>` and convert numeric IDs to strings at the boundary.
+
+Scope the store name by environment so Studio sessions cannot touch production records, and let RTBF template matching (section 1b) still work by keeping the `player_<UserId>` shape intact in every environment:
+
+```luau
+local RunContext = game:GetService("RunService")
+
+local STORE_NAME = if RunContext:IsStudio()
+    then "PlayerData_Studio"
+    else "PlayerData"
+```
+
+Suffix the base name; do not rename the key format per environment. A store suffix plus `ProfileStore.Mock` (for library-based setups) covers the two Studio testing modes: live API writes that stay out of production, and fully ephemeral writes.
+
+## 1a. User identity: Player.User and UserId
+
+`Player.User` is a read-only `User` value with three fields: `Id` (a domain-scoped user ID), `DomainType` (`EXPERIENCE` or `OAUTH`), and `DomainId` (the universe ID for experiences, the application ID for OAuth). The docs designate `Player.User` as the standard way to identify users in new code, and engine APIs that accept user ID parameters also accept `User` values directly. <!-- temporal: 2026-09 -->
+
+`Player.UserId` is not deprecated: it remains the read-only integer that uniquely and consistently identifies the account, and the docs call it essential for saving and loading player data. The distinction matters for key design:
+
+- A domain user ID is scoped to one experience, not to the account, so `User.Id` cannot serve as a cross-experience or cross-place identifier scheme. Domain user IDs are guaranteed not to collide with global user IDs.
+- If you must persist or transmit identity, `User:ToString()` encodes domain type, domain ID, and user ID into a stable, URL-safe string that round-trips through `User.fromString()`.
+- Do not mix identifiers in one key scheme: a key built from `player.UserId` and one built from `User.Id` form two disjoint populations with no migration path between them. Pick one deliberately and document it (the RTBF section below adds another constraint).
+
+## 1b. Right-to-be-forgotten deletion templates
+
+When a user requests deletion of their personal data, Roblox notifies creators, who remain responsible for permanently erasing it. Automated deletion does the bulk of the work if your keys are shaped for it: you declare up to 100 deletion templates telling Roblox which keys or whole data stores hold a user's data, and when Roblox processes an RTBF request it substitutes the requester's ID for the `{UserId}` token and deletes matches automatically. <!-- temporal: 2026-09 -->
+
+Eligibility requirements from the docs:
+
+- Data must live in a standard or ordered data store. Whole-data-store deletion is supported for standard data stores only.
+- The user ID must be part of the `Name` or the `Scope` of the data store or key, matched via a static string pattern such as `player_{UserId}`. The `{UserId}` token is case-sensitive; `{userId}` is not accepted.
+- If the store uses the default scope, set the template's `scope_pattern` to `"global"`; an omitted or blank scope pattern also defaults to `global`.
+
+| Template kind | Required fields | Notes |
+| ---- | ---- | ---- |
+| Key template | `data_store_type` (`STANDARD` or `ORDERED`), `data_store_name`, `key_pattern` | `scope_pattern` optional but recommended |
+| Data store template | `data_store_type` (`STANDARD` only), `data_store_pattern` | Deletes an entire data store matching the pattern |
+
+Configure templates either visually (Creator Dashboard, Configure > Data Stores Manager, RTBF Deletion tab, Create Template) or programmatically through the Open Cloud Configs API: edit the `user_data_templates` JSON configuration in the `DataStoresConfig` repository, draft it with a `PUT`, verify with a `GET`, then `POST publish`. The API key needs `universe:read` and `universe:write` permissions, and group games require group-side publish permissions.
+
+The connection to this skill's key convention is direct: `player_<UserId>` is exactly the shape template matching requires, because the ID appears in the key name as a static pattern. A random, hashed, or encoded key format silently makes the experience non-compliant: the template system can no longer map a requester's ID onto your keys, so every request needs manual deletion. If you store identity as an encoded `User:ToString()` value inside the payload instead of the ID in the key name, the same problem applies.
+
+Handling the request once it arrives:
+
+- Roblox sends a daily message listing RTBF requests requiring action. When one appears, verify the corresponding data is removed within 30 days. <!-- temporal: 2026-09 -->
+- For data outside your templates (custom schemas, non-data-store storage), configure a creator webhook with the Right to Erasure Request trigger. Its payload carries `EventPayload.UserId` and `EventPayload.GameIds`; verify the `Roblox-Signature` header before acting on it.
+- A `RemoveAsync` deletion is a soft delete: the key reads back `nil`, but older versions stay retrievable during their retention window (see section 5c). Decide whether your erasure flow must also cover version history.
+
+## 2. Define a serializable schema
+
+A template makes missing fields predictable and gives migrations a target.
+
+```luau
+local CURRENT_VERSION = 3
+
+local TEMPLATE = {
+    version = CURRENT_VERSION,
+    coins = 0,
+    inventory = {},
+    settings = {
+        music = true,
+        sensitivity = 1,
+    },
+}
+
+local function cloneTemplate()
+    -- Deep-construct: table.clone(TEMPLATE) is shallow and would alias the
+    -- nested `inventory` and `settings` tables across every profile built
+    -- from the template (mutating one player's inventory would corrupt all).
+    local data = table.clone(TEMPLATE)
+    data.inventory = {}
+    data.settings = table.clone(TEMPLATE.settings)
+    return data
+end
+```
+
+Every nested table must be rebuilt per call so no two profiles share a subtable. Write a small deep-copy helper or construct nested defaults explicitly; after loading, never mutate nested tables that might still be shared with the template. Never store Instances, functions, connections, threads, cyclic references, or values the DataStore serializer cannot represent.
+
+## 3. Read with bounded retries
+
+Retries must be finite and observable. Use exponential backoff with jitter and stop when the server is shutting down.
+
+```luau
+local DataStoreService = game:GetService("DataStoreService")
+local store = DataStoreService:GetDataStore(STORE_NAME) -- from §1; never a per-version name
+
+local function readPlayer(userId: number): (boolean, any)
+    local key = "player_" .. tostring(userId)
+    local delaySeconds = 1
+
+    for attempt = 1, 4 do
+        local ok, value = pcall(function()
+            return store:GetAsync(key)
+        end)
+        if ok then
+            return true, value
+        end
+        task.wait(delaySeconds + math.random() * 0.25)
+        delaySeconds *= 2
+    end
+
+    return false, nil
+end
+```
+
+> **Hub correction:** upstream named this store `PlayerData_v3`. A version number in the store name invites "bump the name to change the format", which starts everyone over on an empty store. Keep one stable store name and put the version inside the data.
+
+A failed read is not an empty profile. Keep the player in a safe loading state or fail the join rather than overwriting an existing record with defaults.
+
+### The 4-second read cache (`DataStoreGetOptions.UseCache`)
+
+`GetAsync` caches values locally for 4 seconds after the first read. A `GetAsync` call within those 4 seconds returns the cached value without hitting the backend; writes through `SetAsync`, `UpdateAsync`, and `IncrementAsync` update the cache immediately and restart the timer. The `DataStoreGetOptions.UseCache` property (default `true`) controls this: set it to `false` to bypass the cache and always fetch from the backend. Cached reads do not count against server or throughput limits; cache-bypassing reads always do. Caching is local to a data store instance, so two instances of the same store (for example, one scoped and one with `AllScopes`) can hold different cached states for the same key. <!-- temporal: 2026-09 -->
+
+Consequences:
+
+- **Verify-after-write must bypass the cache.** After a failed or uncertain write, a normal `GetAsync` can return the pre-write cached value and mislead your recovery logic. Read back with `UseCache = false` to decide retry or refund from backend state.
+- **Cross-server reads are not synchronized by the cache.** The cache only reflects writes made through this server's data store instance; another server's recent write stays invisible to a cached read for up to 4 seconds. Do not build cross-server consistency expectations on plain `GetAsync`.
+
+```luau
+local options = Instance.new("DataStoreGetOptions")
+options.UseCache = false
+local success, value, keyInfo = pcall(function()
+    return store:GetAsync(key, options)
+end)
+```
+
+
+## 4. Session ownership
+
+Two live servers must not both believe they own the same mutable profile. A wrapper may implement locks, heartbeat, and release handling. If implementing the protocol yourself, define:
+
+- an owner token that identifies the live server;
+- an expiry or heartbeat policy;
+- the behavior when a lock is fresh, stale, or ambiguous;
+- how release is recorded;
+- what happens if the server crashes between a write and a release.
+
+Do not silently take a lock just because a player is joining. A false takeover can lose progress from the original server. If the project uses a library such as ProfileStore, read its current documentation and use its release signals rather than reaching into internal fields.
+
+## 5. Atomic updates
+
+Use `UpdateAsync` when the new value depends on the stored value. The transform should be deterministic, small, and safe to run more than once if the service retries it. The migration it runs must already be in scope, so define `migrate` before this function (see the migration snippet in `## 6. Migration`):
+
+```luau
+local function migrate(data)
+    data = data or cloneTemplate()
+    data.version = data.version or 1
+
+    if data.version < 2 then
+        data.coins = data.coins or data.gold or 0
+        data.gold = nil
+        data.version = 2
+    end
+    if data.version < 3 then
+        data.settings = data.settings or { music = true, sensitivity = 1 }
+        data.version = 3
+    end
+
+    return data
+end
+
+local function addCoins(userId: number, amount: number): boolean
+    -- Reject NaN, infinity, non-integers, and out-of-range amounts.
+    if amount ~= amount or amount == math.huge or amount == -math.huge then
+        return false
+    end
+    if amount % 1 ~= 0 or amount < 0 or amount > 1_000_000 then
+        return false
+    end
+
+    local ok, committed = pcall(function()
+        return store:UpdateAsync("player_" .. tostring(userId), function(old)
+            -- Migrate BEFORE mutating: stamping the version without running
+            -- migrations would mark an old record as current while its fields
+            -- are still missing, and would silently downgrade a future record.
+            if old ~= nil then
+                if type(old) ~= "table" then
+                    return nil -- unsupported shape: cancel the write, escalate
+                end
+                local version = tonumber(old.version) or 0
+                if version > CURRENT_VERSION then
+                    return nil -- future schema: cancel the write, do not downgrade
+                end
+            end
+            local data = migrate(old)
+            data.coins = (data.coins or 0) + amount
+            data.version = CURRENT_VERSION -- stamp only after migration
+            return data
+        end)
+    end)
+    -- A cancelled transform (nil return) makes UpdateAsync return nil: the
+    -- write never happened, so report failure even though pcall succeeded.
+    -- Returning the bare pcall flag would report success without granting.
+    return ok and committed ~= nil
+end
+```
+
+Do not perform network calls, yield, or mutate external state inside the transform callback. If the callback returns `nil`, the update is cancelled and the stored value remains unchanged; use that deliberately for unsupported schemas. A cancelled or failed write must surface to callers and observability rather than silently reporting success.
+
+## 5a. Cross-owner atomicity limits
+
+The guarantees above are per profile. One `UpdateAsync` either commits its whole transform or none of it, and one session owner serializes writes to one key. None of that extends across profiles, across keys, or across services. Name the boundary in any design that crosses it:
+
+- **Atomic receipt recording for one profile is not an atomic exchange between two profiles.** A receipt ID and its grant can be one durable write for one key. There is no DataStore primitive that debits one profile and credits another in a single commit, so any transfer is two or more independent writes with a crash window between them. The same limit applies to a profile paired with any other durable record, such as a shared guild store or global counter.
+- **A proposed multi-owner transfer must either explicitly exclude the guarantee or show a durable operation identity plus recovery state.** Excluding it means the design states that a crash between the two writes loses or duplicates value. Supporting it means writing a transfer record with a stable operation ID, both owners, the amount, and a state field before the first mutation, so recovery can find half-completed transfers and finish or reverse them. A small idempotent operation record like this is enough; no generic transaction framework is required or assumed.
+- **Administrative or external mutation must coordinate with the active owner.** An Open Cloud write, backend script, or manual editor fix applied while a live server still owns the session will be overwritten by that owner's next save. Either route the change through the active owner, or use a documented quiescence protocol: confirm the session is released and cannot be re-acquired mid-repair, mutate, then let the next owner load the repaired data (API-key side: `roblox-lessons` `references/open-cloud.md`).
+- **Webhook acceptance is not completion.** For Roblox webhooks received off-platform, durable acceptance and deduplication must not acknowledge away an event before its work is recoverable. If the dedup marker is durable but the grant or enqueue behind it is not, the success response converts a retryable delivery into silent loss.
+
+### Worked failure sequence
+
+Each case names its recovery owner, or is labeled unsupported.
+
+**(a) Debit committed, credit absent.** A transfer debits player A, then the server crashes before crediting player B. Recovery owner: the transfer coordinator, through the durable operation record written before the debit. Recovery is a restart or periodic sweep that reads `pending` records, checks both profiles against the operation ID, and completes the credit or refunds the debit, then marks the record `done` or `reversed`. Every step must be idempotent by operation ID so a crash during recovery is safe to retry. Without such a record this flow is unsupported: two session-locked profiles cannot be reconciled after the crash, and the design must document that exclusion instead of shipping the loss.
+
+```luau
+-- Durable operation identity, illustrative shape only
+local transfer = {
+    id = "xfer_0f3e",   -- stable operation ID, generated once
+    from = 111,
+    to = 222,
+    amount = 500,
+    state = "pending",  -- pending -> done | reversed
+}
+-- 1. Write the transfer record durably before any mutation.
+-- 2. Debit A via UpdateAsync (skip if already debited for this id).
+-- 3. Credit B via UpdateAsync (skip if already credited for this id).
+-- 4. Mark the record done.
+-- Recovery: sweep pending records and resume at the first incomplete step.
+```
+
+**(b) Owner save after external repair.** A support script repairs a value through Open Cloud while player A's live server still owns the session. The owner's next autosave writes its stale in-memory copy and the repair is gone. Coordination requirement: the actor performing the external mutation is the recovery owner and must quiesce the session first, meaning verify the lock is released, prevent re-acquisition during the repair window, apply the fix, then let the next owner load. If quiescence is impossible, the mutation must be routed through the active owner instead; writing anyway does not risk the loss, it guarantees it.
+
+**(c) Dedup written, enqueue absent.** A webhook receiver records the notification ID in a durable dedup store, then crashes before the grant or enqueue is durable. If Roblox redelivers, the dedup hit drops the event: acknowledged but never acted on. Recovery owner: the receiver's own worker, and the fix is ordering. Make the work record itself the dedup record by writing the job or grant keyed by notification ID in one durable write before acking, or write the work record first and keep the worker idempotent by notification ID. A durable work record without an ack is safe, because the worker can still process or retry it; the reverse order is the loss.
+
+## 5b. Durable acknowledgements (grant/ack ordering)
+
+Operations whose caller is told "done" — a purchase, a quest completion, a reward — follow one ordering rule: **acknowledge only after persistence**, and replay the *same* operation on unknown outcomes.
+
+- **Unresolved ≠ failed.** A write timeout or transport failure can leave the commit outcome unknown. A library's `false` result may instead mean refusal or another documented state; interpret that library's contract, not the boolean alone. The correct response is to retry the same idempotent operation, never to re-grant value on the ambiguous result (double-grant failure mode). The same reasoning drives `ProcessReceipt`'s retry semantics in `roblox-monetization` §3: return the not-processed answer until persistence is confirmed, so the platform retries instead of the game losing or duplicating a paid grant.
+- **Idempotency key per intent.** Key the durable record to the player's *intent* (transaction id, request id) so replays of the same operation collapse: the write is "record grant X if and only if X is not already recorded", and the ack follows that record's success.
+- **Distinguish refusals from retries.** A framework or validation refusal (bad amount, unsupported schema) is terminal and must not be retried; an unknown outcome is retryable. Conflating them either drops entitled grants or hammers a failing store.
+
+## 5c. Batch reads and request budgets
+
+`GlobalDataStore:BatchGetAsync(keys, options?)` retrieves multiple keys in a single request, but per the docs it is currently only supported on `OrderedDataStore`: calling it on a standard `GlobalDataStore` or `DataStore` throws an error. It returns a dictionary mapping each key to a table with a `value` field; keys that do not exist are omitted from the result rather than returned as nil. The `keys` array must contain at least one key and no more than a server-configured maximum (default 100); each call counts against the ordered read budget based on the number of keys requested.
+
+```luau
+local ordered = DataStoreService:GetOrderedDataStore("PlayerScores")
+local success, results = pcall(function()
+    return ordered:BatchGetAsync({"player_111", "player_222", "player_333"})
+end)
+if success then
+    for _, key in {"player_111", "player_222", "player_333"} do
+        local entry = results[key]
+        if entry then print(key, entry.value) end
+    end
+end
+```
+
+`DataStoreService:GetRequestBudgetForRequestType(requestType)` returns how many data store requests the current place can still make for a `DataStoreRequestType` such as `StandardRead`, `StandardWrite`, or `OrderedWrite`. Requests beyond the budget are throttled. Poll this instead of guessing against the formulas: read headroom before issuing batched or burst work and defer or shed load when it runs low.
+
+```luau
+local function waitForBudget(requestType: Enum.DataStoreRequestType)
+    while DataStoreService:GetRequestBudgetForRequestType(requestType) <= 0 do
+        task.wait(1)
+    end
+end
+```
+
+`UpdateAsync` consumes from both the read and the write budget. Experience-level and game-server budgets are shared with Open Cloud traffic; see section 10 for the formulas.
+
+## 6. Migration
+
+Migrate data after it is loaded and before gameplay sees it. Each migration should be small, ordered, and testable; the `migrate` shown with `addCoins` in `## 5. Atomic updates` is the pattern:
+
+Stamping the version is part of each migration step, never a substitute for it: a write that bumps `version` without running the migrations leaves fields missing while the record claims to be current. Conversely, if a stored version is newer than `CURRENT_VERSION`, refuse the write rather than overwriting unknown schema. Keep old-field handling until every supported record has migrated or until a deliberate data-retention policy says it can be removed. Test migrations against missing fields, old nested shapes, extra fields, and malformed values.
+
+> **Hub correction (from `roblox-lessons` data.md):** the inline `migrate` above mutates the loaded table in place. For profile loads, run a pure `Migrate(data, target)` on a **deep copy**: `Steps[v]` upgrades v to v+1, each step in `pcall`, and the live data is replaced only when every step succeeds. A save newer than the code (an old server during a rolling update) or a missing/failed step ends the session, leaves the stored save untouched and kicks with "please rejoin". Keep a spec that fails until every version from the baseline up has a step.
+
+### Reconciling against the current template
+
+Versioned migration and template reconciliation solve different gaps. Migration handles schema *changes*; reconciliation handles *additions*: a new field added to the default template that old records (and any record written before the field existed) simply lack. Reconcile recursively against the typed template at load, filling only missing keys and never overwriting stored values:
+
+```luau
+local function reconcile(target, template)
+    for key, default in template do
+        if target[key] == nil then
+            target[key] = if type(default) == "table"
+                then reconcile({}, default)
+                else default
+        elseif type(target[key]) == "table" and type(default) == "table"
+            and not getmetatable(target[key]) then
+            reconcile(target[key], default)
+        end
+    end
+    return target
+end
+```
+
+Run it after migration, before the profile is exposed to gameplay. Notes: keyed tables that hold arbitrary IDs (inventories, GUID-keyed entries) need a template entry for their *shape*, not their contents, so reconcile a prototype entry rather than enumerating keys; and skip reconciliation for metatable-backed objects so you do not overwrite class instances with plain defaults.
+
+## 7. Save lifecycle
+
+A practical lifecycle is:
+
+1. load before enabling gameplay;
+2. hold the profile in memory while the player is active;
+3. mark dirty when state changes, then autosave at a bounded interval;
+4. release or final-save on `PlayerRemoving`;
+5. flush pending work from `BindToClose`.
+
+Use one save coordinator per player. Multiple unrelated systems writing the same key create ordering races and make failures impossible to reason about.
+
+```luau
+local Players = game:GetService("Players")
+local closing = false
+local active = {}
+
+local function releasePlayer(player: Player)
+    local profile = active[player]
+    active[player] = nil
+    if profile then
+        profile:Release() -- wrapper-specific; use the project's actual API
+    end
+end
+
+Players.PlayerRemoving:Connect(releasePlayer)
+
+game:BindToClose(function()
+    closing = true
+    for player in Players:GetPlayers() do
+        releasePlayer(player)
+    end
+end)
+```
+
+The example shows ownership, not a complete save library. Add timeouts, completion tracking, and an explicit policy for failed final saves.
+
+## 7a. Scheduled restarts (`ServerRestartScheduled`)
+
+Planned restarts provide advance notice. The example below is illustrative; define the countdown remote and integrate the existing save/round lifecycle before using it:
+
+- `game.ServerRestartScheduled` fires with `(restartTime: DateTime, source: CloseReason, attributes: Dictionary)`. `source` distinguishes `Enum.CloseReason.DeveloperUpdate` (Restart Servers) from `Enum.CloseReason.RobloxMaintenance`; `restartTime` is the *earliest* shutdown time, not an exact moment.
+- The Creator Hub supports restarting outdated servers only. Roblox handles migration on restart; a round-break teleport is optional control over timing, not a requirement to prevent players being stranded on old servers.
+- Use the lead time: set `restartPending`, stop starting rounds, and move players at a **round break** (keeps match state out of the handoff). Forward `restartTime` and `attributes` (e.g. `attributes.message`) to clients via a RemoteEvent for countdown UI.
+- Save lifecycle: use this advance notice — flush saves while players are still connected, let normal `PlayerRemoving`/`BindToClose` handling finish, and do not double-release profiles on the way down.
+
+```luau
+local Players = game:GetService("Players")
+local restartPending = false
+
+game.ServerRestartScheduled:Connect(function(restartAt: DateTime, source: Enum.CloseReason, attributes: {[string]: any})
+	restartPending = true
+	for _, player in Players:GetPlayers() do
+		-- client countdown UI reads restartAt and attributes.message
+		countdownRemote:FireClient(player, restartAt.UnixTimestampMillis, attributes.message)
+	end
+end)
+
+-- At the next round boundary:
+-- if restartPending then
+-- 	TeleportService:TeleportAsync(game.PlaceId, Players:GetPlayers()) -- hop to a current-version server
+-- end
+```
+
+Treat the restart hop as any other teleport: `pcall` it and flush/release sessions before players leave.
+
+## 8. ProfileStore integration
+
+> **Hub note:** upstream marks this section optional; for our games ProfileStore is the default for player profiles. Build the store name with the Studio suffix from §1 (`"PlayerData" .. (IsStudio and "_Studio" or "")`) rather than the literal below; with Studio API access off, ProfileStore uses its in-memory mock automatically. Run the §6 migration before `Reconcile()`.
+
+ProfileStore is a player-oriented wrapper, not a replacement for OrderedDataStore, MemoryStoreService, or global state. If a project uses it, follow its current lifecycle instead of layering a second lock protocol around it:
+
+```luau
+local Players = game:GetService("Players")
+local ProfileStore = require(path.to.ProfileStore)
+
+local TEMPLATE = { version = 1, coins = 0, inventory = {} }
+local PlayerStore = ProfileStore.New("PlayerData", TEMPLATE)
+local Profiles: {[Player]: any} = {}
+
+-- Supplying a Cancel callback disables ProfileStore's built-in acquisition
+-- timeout, so the example enforces its own bounded deadline.
+local ACQUISITION_TIMEOUT = 30
+
+local function loadPlayer(player: Player)
+    local startedAt = os.clock()
+    local profile = PlayerStore:StartSessionAsync(tostring(player.UserId), {
+        Cancel = function()
+            -- Called repeatedly while the session waits to acquire the lock.
+            -- `closing` is a shutdown flag set inside BindToClose (see the
+            -- Save lifecycle section).
+            return player:IsDescendantOf(Players) == false -- player left
+                or closing -- stop acquiring during shutdown
+                or os.clock() - startedAt > ACQUISITION_TIMEOUT -- deadline elapsed
+        end,
+    })
+
+    if profile == nil then
+        -- Bounded acquisition failure: the player left, the server is
+        -- shutting down, or the deadline elapsed under contention. Do not
+        -- treat nil as a new empty profile, and do not assume the abandoned
+        -- acquisition is interrupted instantly. Proceed without a profile
+        -- (limited or read-only mode) or kick, per the project's policy.
+        player:Kick("Your data session could not be opened. Please rejoin.")
+        return
+    end
+
+    profile:AddUserId(player.UserId)
+    profile:Reconcile()
+    Profiles[player] = profile
+
+    profile.OnSessionEnd:Connect(function()
+        Profiles[player] = nil
+        if player:IsDescendantOf(Players) then
+            player:Kick("Your data session ended. Please rejoin.")
+        end
+    end)
+end
+
+local function releasePlayer(player: Player)
+    local profile = Profiles[player]
+    Profiles[player] = nil
+    if profile then
+        profile:EndSession()
+    end
+end
+
+Players.PlayerAdded:Connect(loadPlayer)
+Players.PlayerRemoving:Connect(releasePlayer)
+```
+
+The important behavior is the failure path. `StartSessionAsync()` can return `nil`; never treat that as a new empty profile. Supplying a `Cancel` callback also disables ProfileStore's built-in acquisition timeout, so a custom `Cancel` must include its own elapsed-time deadline; without one, a connected player contending for a locked profile can wait forever. Keep the deadline bounded and define what happens on failure (proceed without a profile or kick). `Steal = true` bypasses session protection and belongs only in controlled debugging, not normal joins. Use `ProfileStore.Mock` in Studio when live API access is enabled but writes must remain ephemeral.
+
+Use `ProfileStore:MessageAsync(profileKey, message)` only for critical profile-targeted delivery, such as an offline paid gift that must be delivered later, and receive it with `profile:MessageHandler(...)`. For best-effort live announcements, use MessagingService instead. Profiles also expose critical-state and error signals; route them to observability rather than silently continuing as if saves were healthy.
+
+## 8a. Version history
+
+Standard data stores version every key. `SetAsync`, `UpdateAsync`, and `IncrementAsync` create a versioned backup on the first write to each key in each UTC hour; successive writes within the same UTC hour permanently overwrite the previous data. Versioned backups expire 30 days after a newer write supersedes them; the latest version never expires. Ordered data stores do not support versioning or metadata. <!-- temporal: 2026-09 -->
+
+| Method | Purpose |
+| ---- | ---- |
+| `DataStore:ListVersionsAsync(key, sortDirection?, minDate?, maxDate?, pageSize?)` | Enumerate a key's versions (paged, optional time-range filter) |
+| `DataStore:GetVersionAsync(key, version)` | Read a specific version; version IDs come from `ListVersionsAsync` or the return of `SetAsync` |
+| `DataStore:GetVersionAtTimeAsync(key, timestamp)` | Read the version current at a Unix-millisecond timestamp (must be positive, at most 10 minutes in the future) |
+| `DataStore:RemoveVersionAsync(key, version)` | Deprecated; permanently deletes one version with no tombstone and no recovery |
+
+Restoring means reading an old version and writing it back as a new current version, so the restore itself is versioned and auditable:
+
+```luau
+local pages = store:ListVersionsAsync(key, Enum.SortDirection.Descending, nil, maxDate.UnixTimestampMillis)
+local closest = pages:GetCurrentPage()[1]
+if closest then
+    local value, info = store:GetVersionAsync(key, closest.Version)
+    local setOptions = Instance.new("DataStoreSetOptions")
+    setOptions:SetMetadata(info:GetMetadata())
+    store:SetAsync(key, value, nil, setOptions)
+end
+```
+
+Interaction with soft delete: `RemoveAsync` does not erase anything by itself. It appends a tombstone version, so subsequent `GetAsync` calls return `nil`, while older versions stay readable via `ListVersionsAsync` and `GetVersionAsync` until they expire. Two consequences: data thought deleted can still be retrievable (relevant to erasure obligations, section 1b), and an accidental `RemoveAsync` is recoverable by reading the prior version and rewriting it. Only the latest version counts toward the storage limit (section 10).
+
+## 9. Data safety checklist
+
+- [ ] A failed load cannot overwrite an existing record with defaults.
+- [ ] One server owns a mutable player profile at a time.
+- [ ] Store keys and schema versions are stable and documented.
+- [ ] `UpdateAsync` is used for read-modify-write operations.
+- [ ] Retries are finite, backoff is bounded, and failures are observable.
+- [ ] Migrations are idempotent and tested against old records.
+- [ ] Template-derived profiles never share nested default tables.
+- [ ] Version stamps are only written after migrations run; records newer than `CURRENT_VERSION` are rejected, not downgraded.
+- [ ] Custom session-acquisition `Cancel` callbacks include an explicit elapsed-time deadline.
+- [ ] Player removal and server shutdown release or save profiles.
+- [ ] No client-provided value bypasses server validation before persistence.
+- [ ] Persisted numbers are checked for NaN/infinity; persisted strings pass `utf8.len`.
+- [ ] Client-supplied nested tables are re-validated field by field before saving.
+- [ ] Player keys embed the user ID as a static string (for example `player_<UserId>`) so RTBF deletion templates can match them.
+- [ ] Verify-after-write reads use `DataStoreGetOptions.UseCache = false` so recovery decisions use backend state, not the 4-second cache.
+- [ ] Request bursts are gated on `GetRequestBudgetForRequestType` headroom instead of assumed quota.
+
+Before destructive tests (wipe scripts, migration replays, bulk-key writes), confirm the actual destinations: exact DataStore, OrderedDataStore, and MemoryStore names, plus Open Cloud endpoints or webhooks the code calls. A test-place label is not isolation; a shared store name reaches production records. Keep a mutation record with a compensating action per `roblox-studio-mcp`.
+
+## 10. Limits and quotas (verified formulas)
+
+All formulas below come from the data store error-codes-and-limits page and scale with concurrent users; they are current as of the last_reviewed date. Do not hardcode sampled values; read live headroom with `GetRequestBudgetForRequestType` (section 5c). <!-- temporal: 2026-09 -->
+
+Experience-level shared limits (requests per minute, all servers plus Open Cloud combined). `concurrentUsers` is the experience's total concurrent user count:
+
+| Request type | Standard stores | Ordered stores |
+| ---- | ---- | ---- |
+| Read | 300 + concurrentUsers x 40 | 300 + concurrentUsers x 40 |
+| Write | 300 + concurrentUsers x 20 | 300 + concurrentUsers x 20 |
+| List | 300 + concurrentUsers x 2 | 300 + concurrentUsers x 2 |
+| Remove | 300 + concurrentUsers x 40 | 300 + concurrentUsers x 40 |
+
+Per-server default limits (requests per minute, `numPlayers` = players in that server; creators can reconfigure with `SetRateLimitForRequestType`):
+
+| Request type | Standard stores | Ordered stores |
+| ---- | ---- | ---- |
+| Read | 60 + numPlayers x 40 | 60 + numPlayers x 40 |
+| Write | 60 + numPlayers x 40 | 30 + numPlayers x 5 |
+| List | 5 + numPlayers x 2 | 5 + numPlayers x 2 |
+| Remove | 60 + numPlayers x 40 | 30 + numPlayers x 5 |
+
+Data limits:
+
+| Component | Limit |
+| ---- | ---- |
+| Data store name | 50 characters |
+| Key name | 50 characters |
+| Scope | 50 characters |
+| Value (key data) | 4,194,304 characters per key |
+
+Other verified limits:
+
+- **Per-key throughput:** reads 25 MB per minute and writes 4 MB per minute per key across all servers, rounded up to the next kilobyte per request.
+- **Storage:** `Total latest version storage limit = 500 MB + 1 MB x lifetime user count`, where a lifetime user is anyone who has joined at least once. Usage is measured as the compressed size of each key's latest version; do not pre-compress data.
+- **UpdateAsync consumes from both the read and write budgets**, at experience and server level.
+- **Studio Run mode** has separate, possibly lower static limits; test rate limits in Studio Team Create instead.
+
+## Community ecosystem (leads, not sources)
+
+Top-sorted DevForum canon for datastore libraries. Verify current status in-thread before recommending; do not lift code without license.
+
+- Lineage: [DataStore2](https://devforum.roblox.com/t/how-to-use-datastore2-data-store-caching-and-data-loss-prevention/136317) (2018, historical) → [ProfileService](https://devforum.roblox.com/t/save-your-player-data-with-profileservice-datastore-module/667805) (2020) → [ProfileStore](https://devforum.roblox.com/t/profilestore-save-your-player-data-easy-datastore-module/3190543) (2024, current standard; already integrated above).
+- [Stop using SetAsync()](https://devforum.roblox.com/t/stop-using-setasync-to-save-player-data/276457): the canonical anti-pattern post; session-locking rationale.
+- [Suphi's DataStore Module](https://devforum.roblox.com/t/suphis-datastore-module/2425597): lighter alternative; [DataDelve](https://devforum.roblox.com/t/datadelve-%E2%80%94-easy-free-datastore-editor/3067950): free datastore editor for debugging live data.
+
+## Grant provenance and recovery-record compatibility
+
+Keep a bounded provenance entry with each committed purchase or grant: item, quantity, actual amount/currency, source, timestamp, build context, and the operation identifier used by the authoritative owner. Include free grants and retried receipts without duplicating the entry. Keep the entry and entitlement consistent within the existing durable mutation boundary. Report ownership acquired before the ledger as unknown provenance; do not reconstruct a historical price from today's catalog.
+
+Every recovery writer is a schema producer. Serialize representative crash-left, reserved-credit, cancelled-operation, and receipt-less records, then pass them through the production load, validation, migration and recovery path before shipping. Test subsequent save and rejoin as well as successful recovery. A recovery function that accepts an in-memory record does not prove that the real validator will let a player load it.
